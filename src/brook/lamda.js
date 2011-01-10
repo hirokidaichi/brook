@@ -2,7 +2,7 @@ Namespace('brook.lamda')
 .define(function(ns){
     var cache = {};
     var hasArg = function(expression){
-        return /->/.test(expression);
+        return expression.indexOf('->') >= 0;
     };
     var parseExpression = function(expression){
         var fixed = hasArg( expression ) ? expression : "$->"+expression;

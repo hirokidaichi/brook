@@ -1,3 +1,230 @@
+if (!Array.prototype.forEach)
+{
+  Array.prototype.forEach = function(fun /*, thisp*/)
+  {
+    var len = this.length;
+    if (typeof fun != "function")
+      throw new TypeError();
+
+    var thisp = arguments[1];
+    for (var i = 0; i < len; i++)
+    {
+      if (i in this)
+        fun.call(thisp, this[i], i, this);
+    }
+  };
+}
+
+if (!Array.prototype.reduce)
+{
+  Array.prototype.reduce = function(fun /*, initialValue */)
+  {
+    "use strict";
+
+    if (this === void 0 || this === null)
+      throw new TypeError();
+
+    var t = Object(this);
+    var len = t.length >>> 0;
+    if (typeof fun !== "function")
+      throw new TypeError();
+
+    // no value to return if no initial value and an empty array
+    if (len == 0 && arguments.length == 1)
+      throw new TypeError();
+
+    var k = 0;
+    var accumulator;
+    if (arguments.length >= 2)
+    {
+      accumulator = arguments[1];
+    }
+    else
+    {
+      do
+      {
+        if (k in t)
+        {
+          accumulator = t[k++];
+          break;
+        }
+
+        // if array contains no values, no initial value to return
+        if (++k >= len)
+          throw new TypeError();
+      }
+      while (true);
+    }
+
+    while (k < len)
+    {
+      if (k in t)
+        accumulator = fun.call(undefined, accumulator, t[k], k, t);
+      k++;
+    }
+
+    return accumulator;
+  };
+}
+
+if (!Array.prototype.map)
+{
+  Array.prototype.map = function(fun /*, thisp */)
+  {
+    "use strict";
+
+    if (this === void 0 || this === null)
+      throw new TypeError();
+
+    var t = Object(this);
+    var len = t.length >>> 0;
+    if (typeof fun !== "function")
+      throw new TypeError();
+
+    var res = new Array(len);
+    var thisp = arguments[1];
+    for (var i = 0; i < len; i++)
+    {
+      if (i in t)
+        res[i] = fun.call(thisp, t[i], i, t);
+    }
+
+    return res;
+  };
+}
+
+if (!Array.prototype.every)
+{
+  Array.prototype.every = function(fun /*, thisp */)
+  {
+    "use strict";
+
+    if (this === void 0 || this === null)
+      throw new TypeError();
+
+    var t = Object(this);
+    var len = t.length >>> 0;
+    if (typeof fun !== "function")
+      throw new TypeError();
+
+    var thisp = arguments[1];
+    for (var i = 0; i < len; i++)
+    {
+      if (i in t && !fun.call(thisp, t[i], i, t))
+        return false;
+    }
+
+    return true;
+  };
+}
+
+if (!Array.prototype.filter)
+{
+  Array.prototype.filter = function(fun /*, thisp */)
+  {
+    "use strict";
+
+    if (this === void 0 || this === null)
+      throw new TypeError();
+
+    var t = Object(this);
+    var len = t.length >>> 0;
+    if (typeof fun !== "function")
+      throw new TypeError();
+
+    var res = [];
+    var thisp = arguments[1];
+    for (var i = 0; i < len; i++)
+    {
+      if (i in t)
+      {
+        var val = t[i]; // in case fun mutates this
+        if (fun.call(thisp, val, i, t))
+          res.push(val);
+      }
+    }
+
+    return res;
+  };
+}
+
+if (!Array.prototype.some)
+{
+  Array.prototype.some = function(fun /*, thisp */)
+  {
+    "use strict";
+
+    if (this === void 0 || this === null)
+      throw new TypeError();
+
+    var t = Object(this);
+    var len = t.length >>> 0;
+    if (typeof fun !== "function")
+      throw new TypeError();
+
+    var thisp = arguments[1];
+    for (var i = 0; i < len; i++)
+    {
+      if (i in t && fun.call(thisp, t[i], i, t))
+        return true;
+    }
+
+    return false;
+  };
+}
+
+if (!Array.prototype.reduceRight)
+{
+  Array.prototype.reduceRight = function(callbackfn /*, initialValue */)
+  {
+    "use strict";
+
+    if (this === void 0 || this === null)
+      throw new TypeError();
+
+    var t = Object(this);
+    var len = t.length >>> 0;
+    if (typeof callbackfn !== "function")
+      throw new TypeError();
+
+    // no value to return if no initial value, empty array
+    if (len === 0 && arguments.length === 1)
+      throw new TypeError();
+
+    var k = len - 1;
+    var accumulator;
+    if (arguments.length >= 2)
+    {
+      accumulator = arguments[1];
+    }
+    else
+    {
+      do
+      {
+        if (k in this)
+        {
+          accumulator = this[k--];
+          break;
+        }
+
+        // if array contains no values, no initial value to return
+        if (--k < 0)
+          throw new TypeError();
+      }
+      while (true);
+    }
+
+    while (k >= 0)
+    {
+      if (k in t)
+        accumulator = callbackfn.call(undefined, accumulator, t[k], k, t);
+      k--;
+    }
+
+    return accumulator;
+  };
+}
+
 Namespace('brook').define(function(ns){
     var VERSION = "0.01";
     var Promise = function(next){
@@ -17,7 +244,6 @@ Namespace('brook').define(function(ns){
         for( var i = 0,l = arguments.length;i<l;i++){
             var s = arguments[i];
             s = ( s instanceof Promise) ? s : promise( s );
-                
             r = r.concat( s );
         }
         return r;
@@ -100,6 +326,15 @@ Namespace('brook.util')
             },msecFunc());
         });
     };
+    var waitUntil = function(f){
+        var p = function(next,val){
+            if( f() ){
+                return next(val);
+            }
+            setTimeout(function(){ p(next,val)},100);
+        };
+        return ns.promise(p);
+    };
     var debug = function(sig){
         var sig = sig ? sig : "debug";
         return ns.promise(function(next,val){
@@ -107,6 +342,43 @@ Namespace('brook.util')
             return next( val );
         });
     };
+    var cond = function(f,promise){
+        return ns.promise(function(next,val){
+            if( !f(val) )
+                return next( val );
+            promise.subscribe(function(val){
+                return next( val );
+            },val);
+        });
+    };
+    var match = function(dispatchTable){
+        return ns.promise(function(next,val){
+            var promise = dispatchTable[val] || dispatchTable['__default__'] || ns.promise();
+            promise.subscribe(function(v){
+                next(v);
+            },val);
+        });
+    };
+    var LOCK_MAP = {};
+    var unlock = function(name){
+        return ns.promise(function(next,val){
+            LOCK_MAP[name] = false;
+            next(val);
+        });
+    };
+    var lock = function(name){
+        var tryLock = (function(next,val){
+            if( !LOCK_MAP[name] ){
+                LOCK_MAP[name] = true;
+                return next(val);
+            }
+            setTimeout(function(){
+                tryLock(next,val);
+            },100);
+        });
+        return ns.promise(tryLock);
+    };
+
     var emitInterval = function(msec){
         var msecFunc = ( typeof msec == 'function' )
             ? msec : function(){return msec};
@@ -123,7 +395,12 @@ Namespace('brook.util')
         scatter : scatter,
         takeBy  : takeBy,
         wait    : wait,
+        cond    : cond,
+        match   : match,
         debug   : debug,
+        lock    : lock,
+        unlock  : unlock,
+        waitUntil : waitUntil,
         emitInterval: emitInterval
     });
 });
@@ -134,7 +411,7 @@ Namespace('brook.lamda')
 .define(function(ns){
     var cache = {};
     var hasArg = function(expression){
-        return /->/.test(expression);
+        return expression.indexOf('->') >= 0;
     };
     var parseExpression = function(expression){
         var fixed = hasArg( expression ) ? expression : "$->"+expression;
@@ -169,27 +446,270 @@ Namespace('brook.channel')
             hash[name] = [];
         hash[name].push(val);
     };
-    var through = function(k){return k};
-    var receiveChannel = function(name,promise){
-        register( channels,name, promise );
+
+    var Channel = function(){
+        this.queue = [];
+        this.promises = [];
+    };
+    (function(proto){
+
+        var through = function(k){return k};
+        proto.sendMessage = function(msg){
+            this.queue.push(msg);
+            while( this.queue.length ){
+                var v = this.queue.shift();
+                this.promises.forEach(function(p){ p.run( v );});
+            }
+        };
+        proto.send = function(func){
+            var func = ( func ) ? func : through;
+            var _self = this;
+            return ns.promise(function(next,val){
+                _self.sendMessage(func(val));
+                next(val);
+            });
+        };
+        proto.observe = function(promise){
+            this.promises.push(promise);
+        };
+    })(Channel.prototype);
+
+    var NAMED_CHANNEL = {};
+    var getNamedChannel = function(name){
+        if( NAMED_CHANNEL[name] )
+            return NAMED_CHANNEL[name];
+        NAMED_CHANNEL[name] = new Channel;
+        return NAMED_CHANNEL[name];
+    };
+    var observeChannel = function(name,promise){
+        getNamedChannel( name ).observe( promise );
     };
     var sendChannel = function(name,func){
-        var func = ( func ) ? func : through;
-        return ns.promise(function(next,val){
-            register( queues,name,val);
-            if( channels[name] ){ 
-                while( queues[name].length ){
-                    var v = queues[name].shift();
-                    channels[name].forEach(function(p){ p.run( v );});
-                }
-            }
-            next(val);
-        });
+        var channel = getNamedChannel( name );
+        return channel.send(func);
     };
     ns.provide({
         sendChannel    : sendChannel,
-        observeChannel : receiveChannel
+        observeChannel : observeChannel,
+        createChannel  : function(){ return new Channel;}
     });
 });
 
+
+Namespace('brook.model')
+.use('brook promise')
+.use('brook.util *')
+.use('brook.channel *')
+.use('brook.lamda *')
+.define(function(ns){
+    var Model = function(obj){
+        this.methods = {};
+        this.channels= {};
+        for( var prop in obj ){
+            if( !obj.hasOwnProperty(prop) )
+                continue;
+            this.addMethod( prop,obj[prop]);
+        }
+    };
+    Model.prototype.addMethod = function(method,promise){
+        if( this.methods[method] )
+            throw('already '+ method +' defined');
+        var channel = ns.createChannel();
+        this.methods[method] = promise.bind( channel.send() );
+        this.channels[method] = channel;
+        return this;
+    };
+    Model.prototype.notify = function(method){
+        return ns.promise().bind( this.methods[method] );
+    };
+    Model.prototype.observe   = function(method,observer){
+        if( !this.channels[method] )
+            throw('do not observe undefined method');
+
+        this.channels[method].observe( observer );
+        return this;
+    
+    };
+    var createModel = function(){
+        return new Model;
+    };
+    ns.provide({
+        createModel : createModel
+    });
+});
+
+
+Namespace('brook.dom.compat')
+.use(function(ns){
+    var dataset = (function(){
+        var wrapper = function(element){
+            return element.dataset;
+        };
+        if( HTMLElement.prototype.__lookupGetter__('dataset') ) 
+            return wrapper;
+        if( HTMLElement.prototype.dataset ) 
+            return wrapper;
+
+        var camelize = function(string){
+            return string.replace(/-+(.)?/g, function(match, chr) {
+              return chr ? chr.toUpperCase() : '';
+            });
+        };
+        return function(element){
+            var sets = {};
+            for(var i=0,a=element.attributes,l=a.length;i<l;i++){
+                var attr = a[i];
+                if( !attr.name.match(/^data-/) ) continue;
+                sets[camelize(attr.name.replace(/^data-/,''))] = attr.value;
+            }
+            return sets;
+        };
+    })();
+    
+    var ClassList = function(element){
+        this._element = element;
+        this._refresh();
+    };
+    var classList = function(element){
+        return new ClassList(element);
+    };
+
+    ClassList.prototype = new Array;
+    (function(proto){
+        var check = function(token) {
+            if (token == "") {
+                throw "SYNTAX_ERR";
+            }
+            if (token.indexOf(/\s/) != -1) {
+                throw "INVALID_CHARACTER_ERR";
+            }
+        };
+        this._fake = true;
+        this._refresh = function () {
+            var clss = this._element.getAttribute("class");
+            if (!clss) {
+                return this;
+            }
+            var classes = clss.split(/\s+/);
+            if (classes.length && classes[0] == "") {
+                classes.shift();
+            }
+            if (classes.length && classes[classes.length - 1] == "") {
+                classes.pop();
+            }
+            this.length = classes.length;
+            if (this.length == 0) {
+                return this;
+            }
+            for (var i = 0; i < this.length; ++i) {
+                this[i] = classes[i];
+            }
+            return this;
+        };
+        this.item = function (i) {
+            return this[i] || null;
+        }
+        this.contains = function (token) {
+            check(token);
+            for (var i = 0; i < this.length; ++i) {
+                if (this[i] == token) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        this.add = function (token) {
+            check(token);
+            for (var i = 0; i < this.length; ++i) {
+                if (this[i] == token) {
+                    return;
+                }
+            }
+            this.push(token);
+            this._element.setAttribute("class", this.join(" "));
+        }
+        this.remove = function (token) {
+            check(token);
+            for (var i = 0; i < this.length; ++i) {
+                if (this[i] == token) {
+                    this.splice(i, 1);
+                    this._element.setAttribute("class", this.join(" "));
+                }
+            }
+        }
+        this.toggle = function (token) {
+            check(token);
+            for (var i = 0; i < this.length; ++i) {
+                if (this[i] == token) {
+                    this.remove(token);
+                    return false;
+                }
+            }
+            this.add(token);
+            return true;
+        }
+    }).apply(ClassList.prototype);
+
+    var hasClassName = function(element,className){
+        var classSyntax = element.className;
+        if ( !(classSyntax && className) ) return false;
+        return (new RegExp("(^|\\s)" + className + "(\\s|$)").test(classSyntax)); 
+    };
+    var getElementsByClassName = function(className){
+        if( document.getElementsByClassName ) return document.getElementsByClassName( className );
+        var allElements = document.getElementsByTagName('*');
+        var ret = [];
+        for(var i=0,l=allElements.length;i<l;i++){
+            if( !hasClassName( allElements[i] , className ) )
+                continue;
+            ret.push( allElements[i] )
+        }
+        return ret;
+    };
+
+    ns.provide({
+        getElementsByClassName : getElementsByClassName,
+        hasClassName : hasClassName,
+        dataset   : dataset,
+        classList : classList
+    });
+});
+Namespace('brook.dom.gateway')
+.define(function(ns){
+    ns.provide({});
+});
+Namespace('brook.widget')
+.use('brook promise')
+.use('brook.dom.compat *')
+.define(function(ns){
+    var callByClassName = function(className){
+        var widgetElements = ns.getElementsByClassName(className || 'widget');
+        var map = {};
+        for( var i = 0,l=widgetElements.length;i<l;i++){
+            var widget = widgetElements[i];
+            var dataset = ns.dataset(widget);
+            if( !dataset.widgetNamespace ) continue;
+            if( !map[dataset.widgetNamespace] ) map[dataset.widgetNamespace] = [];
+            map[dataset.widgetNamespace].push( widget );
+        }
+        for( var namespace in map ){
+            if( !map.hasOwnProperty( namespace ) ) continue;
+            var targets = map[namespace];
+            Namespace.use([namespace , '*'].join(' ')).apply(function(_ns){
+                if (_ns.registerElement) {
+                    targets.forEach(function(target) {
+                        _ns.registerElement(target);
+                    });
+                } else if (_ns.registerElements) {
+                    _ns.registerElements( targets );
+                } else {
+                    throw('registerElement or registerElements not defined in ' + namespace);
+                }
+            });
+        }
+    };
+    ns.provide({
+        callByClassName : callByClassName
+    });
+});
 

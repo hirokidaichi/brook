@@ -1,0 +1,9 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+#use File::Slurp qw/read_file/;
+use JavaScript::Minifier qw(minify);
+
+print minify(input=>*STDIN,output=>*STDOUT);
+
+

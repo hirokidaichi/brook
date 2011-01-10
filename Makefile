@@ -1,12 +1,16 @@
 
 
 CORE = ./build/brook-core.js
-WEB  = ./build/brook-web.js
-all : $(CORE) $(WEB)
+FULL = ./build/brook.js
+MIN  = ./build/brook.min.js
+
+all : $(CORE) $(FULL) $(MIN)
+
+clean :
+	rm -rf ./build/*
 
 $(CORE) : \
 	./lib/array.js \
-	./lib/namespace.js \
 	./src/brook.js \
 	./src/brook/util.js \
 	./src/brook/lamda.js\
@@ -14,10 +18,15 @@ $(CORE) : \
 	./src/brook/model.js 
 	cat $^ > $@
 
-$(WEB) : \
+
+$(FULL) : \
 	$(CORE) \
 	./src/brook/dom/compat.js\
-	./src/brook/dom/event.js\
 	./src/brook/dom/gateway.js\
 	./src/brook/widget.js 
 	cat $^ > $@
+
+$(MIN) : \
+	$(FULL)
+	perl ./bin/minify < $^ > $@
+
