@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+<title>Brook Core Test</title>
+<script>
+    document.writeln([
+        "<script ",
+        "src='",
+        "../build/brook-core.js?",
+        Date.now(),
+        "'></script",">"
+    ].join(''));
+</script>
+<script src="tlib/qunit/qunit.js"></script>
+<link rel="stylesheet" href="tlib/qunit/qunit.css">
+<script src="brook.unit.js"></script>
+</head>
+<body>
+ <h1 id="qunit-header">Brook-Core</h1>
+ <h2 id="qunit-banner"></h2>
+ <h2 id="qunit-userAgent"></h2>
+ <ol id="qunit-tests"></ol>
+</body>
+</html>

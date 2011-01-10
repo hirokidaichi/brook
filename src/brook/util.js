@@ -39,6 +39,15 @@ Namespace('brook.util')
             },msecFunc());
         });
     };
+    var waitUntil = function(f){
+        var p = function(next,val){
+            if( f() ){
+                return next(val);
+            }
+            setTimeout(function(){ p(next,val)},100);
+        };
+        return ns.promise(p);
+    };
     var debug = function(sig){
         var sig = sig ? sig : "debug";
         return ns.promise(function(next,val){
@@ -46,6 +55,43 @@ Namespace('brook.util')
             return next( val );
         });
     };
+    var cond = function(f,promise){
+        return ns.promise(function(next,val){
+            if( !f(val) )
+                return next( val );
+            promise.subscribe(function(val){
+                return next( val );
+            },val);
+        });
+    };
+    var match = function(dispatchTable){
+        return ns.promise(function(next,val){
+            var promise = dispatchTable[val] || dispatchTable['__default__'] || ns.promise();
+            promise.subscribe(function(v){
+                next(v);
+            },val);
+        });
+    };
+    var LOCK_MAP = {};
+    var unlock = function(name){
+        return ns.promise(function(next,val){
+            LOCK_MAP[name] = false;
+            next(val);
+        });
+    };
+    var lock = function(name){
+        var tryLock = (function(next,val){
+            if( !LOCK_MAP[name] ){
+                LOCK_MAP[name] = true;
+                return next(val);
+            }
+            setTimeout(function(){
+                tryLock(next,val);
+            },100);
+        });
+        return ns.promise(tryLock);
+    };
+
     var emitInterval = function(msec){
         var msecFunc = ( typeof msec == 'function' )
             ? msec : function(){return msec};
@@ -62,7 +108,12 @@ Namespace('brook.util')
         scatter : scatter,
         takeBy  : takeBy,
         wait    : wait,
+        cond    : cond,
+        match   : match,
         debug   : debug,
+        lock    : lock,
+        unlock  : unlock,
+        waitUntil : waitUntil,
         emitInterval: emitInterval
     });
 });

@@ -17,7 +17,6 @@ Namespace('brook').define(function(ns){
         for( var i = 0,l = arguments.length;i<l;i++){
             var s = arguments[i];
             s = ( s instanceof Promise) ? s : promise( s );
-                
             r = r.concat( s );
         }
         return r;
