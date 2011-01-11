@@ -4,6 +4,7 @@
     <title>Brook Core Test</title>
     <script src="../lib/namespace.js"></script>
 <script>
+    Date.now = function(){ return (new Date).getTime()};
     document.writeln([
         "<script ",
         "src='",
