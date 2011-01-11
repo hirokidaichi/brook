@@ -35,7 +35,6 @@ test('lamda',function(){
         equal( lamda('x,y->x*y')(2,3),6);
         equal( lamda('x,y->z->x*y*z')(2,3)(2),12);
     }
-
 });
 
 test('promise defer',function(){
