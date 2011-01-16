@@ -482,7 +482,6 @@ Namespace('brook.widget')
         v = v || TARGET_CLASS_NAME;
         n([v,Array.prototype.slice.call(ns.getElementsByClassName(v))]);
     });
-
     var mapByNamespace = ns.promise(function(n,val){
         var targetClassName = val[0];
         var widgetElements  = val[1];
@@ -497,7 +496,7 @@ Namespace('brook.widget')
         }
         n(map);
     });
-    var applyNamespace = ns.promise(function(n,map){
+    var registerElements = ns.promise(function(n,map){
         for( var namespace in map ){
             if( !map.hasOwnProperty( namespace ) ) continue;
             var targets = map[namespace];
@@ -520,9 +519,9 @@ Namespace('brook.widget')
     var updater  = ns.from( channel('widget') )
         .bind( ns.lock('class-seek') )
         .bind( elementsByClassName )
-        .bind( ns.unlock('class-seek') )
         .bind( mapByNamespace )
-        .bind( applyNamespace );
+        .bind( ns.unlock('class-seek') )
+        .bind( registerElements );
   
     updater.subscribe();
     ns.provide({
