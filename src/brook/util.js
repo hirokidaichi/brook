@@ -25,9 +25,9 @@ Namespace('brook.util')
 
     var scatter = function(){
         return ns.promise(function(next,val){
-            val.forEach(function(e){
-                next(e);
-            });
+            for( var i = 0, l = val.length;i<l;i++){
+                next(val[i]);
+            }
         });
     };
     var wait = function(msec){
@@ -91,7 +91,18 @@ Namespace('brook.util')
         });
         return ns.promise(tryLock);
     };
-
+    var from = function(value){
+        if( value.observe ){
+            return ns.promise(function(next,val){
+                value.observe(ns.promise(function(n,v){
+                    next(v);
+                }));
+            });
+        }
+        return ns.promise(function(next,val){
+            next(value);
+        });
+    };
     var emitInterval = function(msec){
         var msecFunc = ( typeof msec == 'function' )
             ? msec : function(){return msec};
@@ -113,6 +124,7 @@ Namespace('brook.util')
         debug   : debug,
         lock    : lock,
         unlock  : unlock,
+        from    : from,
         waitUntil : waitUntil,
         emitInterval: emitInterval
     });

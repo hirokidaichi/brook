@@ -42,7 +42,7 @@ Namespace('brook').define(function(ns){
             this.onError(e);
         }
     };
-    
+    proto.forEach = proto.subscribe;
     proto.setErrorHandler = function(promise){
         this.errorHandler = promise;
     };

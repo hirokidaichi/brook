@@ -24,13 +24,10 @@ Namespace('brook.model')
     Model.prototype.notify = function(method){
         return ns.promise().bind( this.methods[method] );
     };
-    Model.prototype.observe   = function(method,observer){
+    Model.prototype.method   = function(method){
         if( !this.channels[method] )
             throw('do not observe undefined method');
-
-        this.channels[method].observe( observer );
-        return this;
-    
+        return this.channels[method];
     };
     var createModel = function(){
         return new Model;

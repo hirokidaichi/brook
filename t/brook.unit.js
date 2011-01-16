@@ -44,10 +44,11 @@ test('promise defer',function(){
         ok(true,'pass');
         n(val);
     }).bind(ns.mapper(ns.lamda("$*$"))).bind(ns.wait(100));
-    p.bind(p).subscribe(function(val){;
+
+    ns.from(10).bind(p).bind(p).subscribe(function(val){;
         equal( val, 10000 ,'val');
         start();
-    },10);
+    });
 });
 
 test('cond',function(){with(ns){
@@ -87,19 +88,15 @@ test('match',function(){with(ns){
 
 test('named channel',function(){
     expect(12);
-    ns.observeChannel('test-channel',
-        ns.promise(function(n,v){
-            ok(n);
-            equals( v.length , 3);
-        }).bind(ns.debug())
-    );
-    ns.observeChannel('test-channel',
-        ns.promise(function(n,v){
-            ok(v);
-            equals( v.length , 3);
-        }).bind(ns.debug())
-    );
-
+    var test = ns.promise(function(n,v){
+        ok(n);
+        equals( v.length , 3);
+    });
+    
+    ns.from(ns.channel('test-channel'))
+        .bind(test).subscribe();
+    ns.from(ns.channel('test-channel'))
+        .bind(test).subscribe();
     var l = ns.scatter()
     .bind( ns.mapper( ns.lamda('$*$')))
     .bind( ns.takeBy(3) )
@@ -111,20 +108,14 @@ test('named channel',function(){
 
 test('channel',function(){
     expect(12);
-    var channel = ns.createChannel();
+    var channel = ns.channel();
+    var test = ns.promise(function(n,v){
+        ok(n);
+        equals( v.length , 3);
+    });
+    ns.from( channel ).bind( test ).subscribe();
 
-    channel.observe( 
-        ns.promise(function(n,v){
-            ok(n);
-            equals( v.length , 3);
-        }).bind(ns.debug())
-    );
-    channel.observe(
-        ns.promise(function(n,v){
-            ok(v);
-            equals( v.length , 3);
-        }).bind(ns.debug())
-    );
+    ns.from( channel ).bind( test ).subscribe();
 
     var l = ns.scatter()
     .bind( ns.mapper( ns.lamda('$*$')))
@@ -151,14 +142,10 @@ test('model',function(){
         start();
     });
     var model = ns.createModel();
-    model.addMethod('create',
-        ns.mapper(ns.lamda('$*2')).bind(
-            network
-        )
-    );
-    model.observe('create',view1);
-    model.observe('create',view2);
+    model.addMethod('create',ns.mapper(ns.lamda('$*2')).bind(network));
 
+    ns.from( model.method('create') ).bind( view1 ).subscribe();
+    ns.from( model.method('create') ).bind( view2 ).subscribe();
     ns.promise().bind(model.notify('create')).run(10);
 });
 

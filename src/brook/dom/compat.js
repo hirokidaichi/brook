@@ -1,6 +1,6 @@
 
 Namespace('brook.dom.compat')
-.use(function(ns){
+.define(function(ns){
     var dataset = (function(){
         var wrapper = function(element){
             return element.dataset;

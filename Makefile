@@ -1,10 +1,9 @@
 
 
-CORE = ./build/brook-core.js
-COMPAT = ./build/brook-compat.js
-MIN  = ./build/brook.min.js
+CORE   = ./build/brook-core.js
+COMPAT = ./build/brook.js
 MOBILE = ./build/brook-mobile.js
-
+MIN    = ./build/brook.min.js
 all : $(CORE) $(COMPAT) $(MIN)
 
 clean :
@@ -13,10 +12,6 @@ clean :
 $(CORE) : \
 	./src/brook.js \
 	./src/brook/util.js \
-	./src/brook/lang/array.js\
-	./src/brook/lang/class.js\
-	./src/brook/lang/object.js\
-	./src/brook/lang/string.js \
 	./src/brook/lamda.js\
 	./src/brook/channel.js\
 	./src/brook/model.js 
@@ -26,7 +21,6 @@ $(CORE) : \
 $(COMPAT) : \
 	$(CORE) \
 	./src/brook/dom/compat.js\
-	./src/brook/dom/gateway.js\
 	./src/brook/widget.js 
 	cat $^ > $@
 
@@ -38,6 +32,6 @@ $(MOBILE) : \
 	cat $^ > $@
 
 $(MIN) : \
-	$(COMPAT)
+	$(MOBILE)
 	perl ./bin/minify < $^ > $@
 

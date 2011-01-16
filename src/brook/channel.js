@@ -9,19 +9,19 @@ Namespace('brook.channel')
             hash[name] = [];
         hash[name].push(val);
     };
-
     var Channel = function(){
         this.queue = [];
         this.promises = [];
     };
     (function(proto){
-
         var through = function(k){return k};
         proto.sendMessage = function(msg){
             this.queue.push(msg);
             while( this.queue.length ){
                 var v = this.queue.shift();
-                this.promises.forEach(function(p){ p.run( v );});
+                for( var i = 0,l= this.promises.length;i<l;i++){
+                    this.promises[i].run(v);
+                }
             }
         };
         proto.send = function(func){
@@ -36,6 +36,12 @@ Namespace('brook.channel')
             this.promises.push(promise);
         };
     })(Channel.prototype);
+    
+    var channel = function(name){
+        if( name )
+            return getNamedChannel(name);
+        return new Channel;
+    };
 
     var NAMED_CHANNEL = {};
     var getNamedChannel = function(name){
@@ -52,6 +58,7 @@ Namespace('brook.channel')
         return channel.send(func);
     };
     ns.provide({
+        channel        : channel,
         sendChannel    : sendChannel,
         observeChannel : observeChannel,
         createChannel  : function(){ return new Channel;}

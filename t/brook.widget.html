@@ -7,19 +7,31 @@
     document.writeln([
         "<script ",
         "src='",
-        "../build/brook-core.js?",
+        "../build/brook.js?",
         Date.now(),
         "'></script",">"
     ].join(''));
 </script>
 <script src="tlib/qunit/qunit.js"></script>
 <link rel="stylesheet" href="tlib/qunit/qunit.css">
-<script src="brook.unit.js"></script>
+<script src="brook.widget.unit.js"></script>
 </head>
 <body>
  <h1 id="qunit-header">Brook-Core</h1>
  <h2 id="qunit-banner"></h2>
  <h2 id="qunit-userAgent"></h2>
  <ol id="qunit-tests"></ol>
+ <div class="test widget" data-widget-namespace="widget.test01" data-item="hello"></div>
+ <div class="test widget" data-widget-namespace="widget.test01" data-item="hello"></div>
+ <div class="test widget" data-widget-namespace="widget.test01" data-item="hello"></div>
+ <div class="test widget" data-widget-namespace="widget.test01" data-item="hello"></div>
+ <div class="test widget" data-widget-namespace="widget.test02" data-item="hello"></div>
+ <div class="test widget" data-widget-namespace="widget.test02" data-item="hello"></div>
+ <div class="test widget" data-widget-namespace="widget.test02" data-item="hello"></div>
+ <div class="test widget" data-widget-namespace="widget.test02" data-item="hello"></div>
+ 
+ <script><!--
+     Namespace.use('brook.widget *').apply(function(ns){ns.bindAllWidget.run();});
+     --></script>
 </body>
 </html>
