@@ -4,6 +4,7 @@ CORE   = ./build/brook-core.js
 COMPAT = ./build/brook.js
 MOBILE = ./build/brook-mobile.js
 MIN    = ./build/brook.min.js
+HTP    = ./build/brook-view-htmltemplate-core.js
 all : $(CORE) $(COMPAT) $(MIN)
 
 clean :
@@ -17,18 +18,21 @@ $(CORE) : \
 	./src/brook/model.js 
 	cat $^ > $@
 
+$(HTP) : ./lib/html-template-core.js
+	perl ./bin/wrapns $^ "brook.view.htmltemplate.core" > $@
 
 $(COMPAT) : \
 	$(CORE) \
+	$(HTP) \
+	./src/brook/view/htmltemplate.js\
 	./src/brook/dom/compat.js\
+	./src/brook/dom/gateway.js\
 	./src/brook/widget.js 
 	cat $^ > $@
 
 $(MOBILE) : \
 	$(COMPAT) \
-	./src/brook/mobile/dom/event.js \
-	./src/brook/mobile/net/httprequester.js \
-	./src/brook/mobile/net/jsonrpc.js
+	./src/brook/mobile/dom/event.js 
 	cat $^ > $@
 
 $(MIN) : \

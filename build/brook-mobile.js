@@ -328,6 +328,630 @@ Namespace('brook.model')
 });
 
 
+Namespace("brook.view.htmltemplate.core")
+.define(function(ns){
+var module = { exports : {}};
+//
+/* 2008 Daichi Hiroki <hirokidaichi@gmail.com>
+ * html-template-core.js is freely distributable under the terms of MIT-style license.
+ * ( latest infomation :https://github.com/hirokidaichi/html-template )
+/*-----------------------------------------------------------------------*/
+var util = {};
+util.defineClass = function(obj,superClass){
+    var klass = function Klass(){
+        this.initialize.apply(this,arguments);
+    };
+    
+    if(superClass) klass.prototype = new superClass;
+    for(var prop in obj ){
+        if( !obj.hasOwnProperty(prop) )
+            continue;
+        klass.prototype[prop] = obj[prop];
+    }
+    if( !klass.prototype.initialize )
+        klass.prototype.initalize = function(){};
+    return klass;
+};
+util.merge = function(origin,target){
+    for(var prop in target ){
+        if( !target.hasOwnProperty(prop) )
+            continue;
+        origin[prop] = target[prop];
+    }
+};
+util.k = function(k){return k};
+util.emptyFunction = function(){};
+util.listToArray = function(list){
+    return Array.prototype.slice.call(list);
+};
+util.curry = function() {
+    var args = util.listToArray(arguments);
+    var f    = args.shift();
+    return function() {
+      return f.apply(this, args.concat(util.listToArray(arguments)));
+    }
+};
+
+util.merge(util,{
+    isArray: function(object) {
+        return object != null && typeof object == "object" &&
+          'splice' in object && 'join' in object;
+    },
+    isFunction: function(object) {
+        return typeof object == "function";
+    },
+    isString: function(object) {
+        return typeof object == "string";
+    },
+    isNumber: function(object) {
+        return typeof object == "number";
+    },
+    isUndefined: function(object) {
+        return typeof object == "undefined";
+    }
+});
+util.createRegexMatcher = function(escapeChar,expArray){
+    function _escape( regText){
+        return (regText + '').replace(new RegExp(escapeChar,'g'), "\\");
+    }
+    var count = 0;
+    var e;
+    var regValues = { mapping : { 'fullText' : [0]},text:[]};
+    for( var i =0,l= expArray.length;i<l;i++){
+        e = expArray[i];
+        if(util.isString(e)){
+            regValues.text.push(e);
+            continue;
+        }
+        if(!regValues.mapping[e.map]){
+            regValues.mapping[e.map] = [];
+        }
+        regValues.mapping[e.map].push(++count);
+        
+    }
+    var reg = undefined;
+    regValues.text = _escape(regValues.text.join(''));
+    return function matcher(matchingText){
+        if(!reg){
+            reg = new RegExp(regValues.text);
+        }
+        var results = (matchingText || '').match(reg);
+        if(results){
+            var ret = {};
+            var prop = 0,i = 0,map = regValues.mapping;
+            for(prop in map){
+                var list   = map[prop];
+                var length = list.length;
+                for(i = 0 ;i<length ;i++){
+                    if(results[list[i]]){
+                        ret[prop] = results[list[i]];
+                        break;
+                    }
+                }
+            }
+            return ret;
+
+        }else{
+            return undefined;
+        }
+    };
+
+};
+
+
+var CHUNK_REGEXP_ATTRIBUTE = util.createRegexMatcher('%',[
+    "<",
+    "(%/)?",{map:'close'},
+    "TMPL_",
+    "(VAR|LOOP|IF|ELSE|ELSIF|UNLESS|INCLUDE)",{map:'tag_name'},
+    "%s*",
+    "(?:",
+        "(?:DEFAULT)=",
+        "(?:",
+            "'([^'>]*)'|",{map:'default'},
+            '"([^">]*)"|',{map:'default'},
+            "([^%s=>]*)" ,{map:'default'},
+        ")",
+    ")?",
+    "%s*",
+    "(?:",
+        "(?:ESCAPE)=",
+        "(?:",
+            "(JS|URL|HTML|0|1|NONE)",{map:'escape'},
+        ")",
+    ")?",
+    "%s*",
+    "(?:",
+        "(?:DEFAULT)=",
+        "(?:",
+            "'([^'>]*)'|",{map:'default'},
+            '"([^">]*)"|',{map:'default'},
+            "([^%s=>]*)" ,{map:'default'},
+        ")",
+    ")?",
+    "%s*",
+    /*
+        NAME or EXPR
+    */
+    "(?:",
+        "(NAME|EXPR)=",{map:'attribute_name'},
+        "(?:",
+            "'([^'>]*)'|",{map:'attribute_value'},
+            '"([^">]*)"|',{map:'attribute_value'},
+            "([^%s=>]*)" ,{map:'attribute_value'},
+        ")",
+    ")?",
+    /*
+        DEFAULT or ESCAPE
+    */
+    '%s*',
+    "(?:",
+        "(?:DEFAULT)=",
+        "(?:",
+            "'([^'>]*)'|",{map:'default'},
+            '"([^">]*)"|',{map:'default'},
+            "([^%s=>]*)" ,{map:'default'},
+        ")",
+    ")?",
+    "%s*",
+    "(?:",
+        "(?:ESCAPE)=",
+        "(?:",
+            "(JS|URL|HTML|0|1|NONE)",{map:'escape'},
+        ")",
+    ")?",
+    "%s*",
+    "(?:",
+        "(?:DEFAULT)=",
+        "(?:",
+            "'([^'>]*)'|",{map:'default'},
+            '"([^">]*)"|',{map:'default'},
+            "([^%s=>]*)" ,{map:'default'},
+        ")",
+    ")?",
+    "%s*",
+    ">"
+]);
+
+var element = {};
+element.Base = util.defineClass({
+    initialize: function(option) {
+        this.mergeOption(option);
+    },
+    mergeOption : function(option){
+        util.merge(this,option);
+        this['closeTag'] =(this['closeTag'])? true: false;
+    },
+    isParent : util.emptyFunction,
+    execute  : util.emptyFunction,
+    isClose  : function() {
+        return this['closeTag'] ? true: false;
+    },
+
+    getCode: function(e) {
+        return "void(0);";
+    },
+    toString: function() {
+        return [
+            '<' ,
+            ((this.closeTag) ? '/': '') ,
+            this.type ,
+            ((this.hasName) ? ' NAME=': '') ,
+            ((this.name) ? this.name: '') ,
+            '>'
+        ].join('');
+    },
+    // HTML::Template::Pro shigeki morimoto's extension
+    _pathLike: function(attribute , matched){
+        var pos = (matched == '/')?'0':'$_C.length -'+(matched.split('..').length-1);
+        return  [
+            "(($_C["+pos+"]['"        ,
+            attribute ,
+            "']) ? $_C["+pos+"]['"    ,
+            attribute ,
+            "'] : undefined )"
+        ].join('');
+
+    },
+    getParam: function() {
+        var ret = "";
+        if (this.attributes['name']) {
+            var matched = this.attributes['name'].match(/^(\/|(?:\.\.\/)+)(\w+)/);
+            if(matched){
+                return this._pathLike(matched[2],matched[1]);
+            }
+            var _default = ( this.attributes['default'] )? "'"+this.attributes['default']+"'":"undefined";
+            ret =  [
+                "(($_T['"            ,
+                    this.attributes['name'] ,
+                "']) ? $_T['"        ,
+                    this.attributes['name'] ,
+                "'] : ",
+                    _default,
+                " )"
+            ].join('');
+        }
+        if (this.attributes['expr']) {
+            var operators = {
+                'gt' :'>',
+                'lt' :'<',
+                'eq' :'==',
+                'ne' :'!=',
+                'ge' :'>=',
+                'le' :'<='
+            };
+            var replaced = this.attributes['expr'].replace(/{(\/|(?:\.\.\/)+)(\w+)}/g,function(full,matched,param){
+                return [
+                     '$_C[',
+                     (matched == '/')?'0':'$_C.length -'+(matched.split('..').length-1),
+                     ']["',param,'"]'
+                ].join('');
+            }).replace(/\s+(gt|lt|eq|ne|ge|le|cmp)\s+/g,function(full,match){
+                return " "+operators[match]+" ";
+            });
+            ret = [
+                "(function(){",
+                "    with($_F){",
+                "        with($_T){",
+                "            return (", replaced ,');',
+                "}}})()"
+            ].join('');
+        }
+        if(this.attributes['escape']){
+            var _escape = {
+                NONE: 'NONE',
+                0   : 'NONE',
+                1   : 'HTML',
+                HTML: 'HTML',
+                JS  : 'JS',
+                URL : 'URL'
+            }[this.attributes['escape']];
+            ret = [
+                '$_F.__escape'+_escape+'(',
+                ret,
+                ')'
+            ].join('');
+        }
+        return ret;
+    }
+});
+
+var cache = {
+    STRING_FRAGMENT : []
+};
+
+
+util.merge( element , {
+    ROOTElement: util.defineClass({
+        type: 'root',
+        getCode: function() {
+            if (this.closeTag) {
+                return 'return $_R.join("");';
+            } else {
+                return [
+                    'var $_R  = [];',
+                    'var $_C  = [param];',
+                    'var $_F  = funcs||{};',
+                    'var $_T  = param||{};',
+                    'var $_S  = cache.STRING_FRAGMENT;',
+                ].join('');
+            }
+        }
+    },element.Base),
+
+    LOOPElement: util.defineClass({
+        type: 'loop',
+        initialize:function(option){
+            this.mergeOption(option);
+        },
+        getLoopId : function(){
+            if( this._ID ) {
+                return this._ID;
+            }
+            if( !element.LOOPElement.instanceId ){
+                element.LOOPElement.instanceId = 0;
+            }
+            var id = element.LOOPElement.instanceId++;
+            this._ID = '$'+id.toString(16);
+            return this._ID;
+        },
+        getCode: function() {
+            if (this.closeTag) {
+                return ['}','$_T = $_C.pop();'].join('');
+            } else {
+                var id = this.getLoopId();
+                return [
+                'var $_L_'+id+' =' + this.getParam() + '|| [];',
+                'var $_LL_'+id+' = $_L_'+id+'.length;',
+                '$_C.push($_T);',
+                'for(var i_'+id+'=0;i_'+id+'<$_LL_'+id+';i_'+id+'++){',
+                '   $_T = (typeof $_L_'+id+'[i_'+id+'] == "object")?',
+                '                $_L_'+id+'[i_'+id+'] : {};',
+                "$_T['__first__'] = (i_"+id+" == 0) ? true: false;",
+                "$_T['__counter__'] = i_"+id+"+1;",
+                "$_T['__odd__']   = ((i_"+id+"+1)% 2) ? true: false;",
+                "$_T['__last__']  = (i_"+id+" == ($_LL_"+id+" - 1)) ? true: false;",
+                "$_T['__inner__'] = ($_T['__first__']||$_T['__last__'])?false:true;"
+                ].join('');
+            }
+        }
+    },element.Base),
+
+    VARElement: util.defineClass({
+        type: 'var',
+        getCode: function() {
+            if (this.closeTag) {
+                throw(new Error('HTML.Template ParseError'));
+            } else {
+                return '$_R.push(' + this.getParam() + ');';
+            }
+        }
+    },element.Base),
+
+    IFElement: util.defineClass({
+        type: 'if',
+        getCondition: function(param) {
+            return "!!" + this.getParam(param);
+        },
+        getCode: function() {
+            if (this.closeTag) {
+                return '}';
+            } else {
+                return 'if(' + this.getCondition() + '){';
+            }
+        }
+    },element.Base),
+
+    ELSEElement: util.defineClass( {
+        type: 'else',
+        getCode: function() {
+            if (this.closeTag) {
+                throw(new Error('HTML.Template ParseError'));
+            } else {
+                return '}else{';
+            }
+        }
+    },element.Base),
+
+    INCLUDEElement: util.defineClass({
+        type: 'include',
+        getCode: function() {
+            if (this.closeTag) {
+                throw(new Error('HTML.Template ParseError'));
+            } else {
+                var name = '"'+(this.attributes['name'])+'"';
+                return [
+                    '$_R.push($_F.__include(',name,',$_T,$_F));'
+                ].join('\n');
+            }
+        }
+    },element.Base),
+
+    TEXTElement: util.defineClass({
+        type: 'text',
+        closeTag: false,
+        initialize : function(option){this.value = option;},
+        getCode: function() {
+            if (this.closeTag) {
+                throw(new Error('HTML.Template ParseError'));
+            } else {
+                cache.STRING_FRAGMENT.push(this.value);
+                return '$_R.push($_S['+(cache.STRING_FRAGMENT.length-1)+']);';
+            }
+        }
+    },element.Base)
+});
+
+element.ELSIFElement = util.defineClass({
+    type: 'elsif',
+    getCode: function() {
+        if (this.closeTag) {
+            throw(new Error('HTML.Template ParseError'));
+        } else {
+            return '}else if(' + this.getCondition() + '){';
+        }
+    }
+},element.IFElement);
+
+element.UNLESSElement = util.defineClass({
+    type: 'unless',
+    getCondition: function(param) {
+        return "!" + this.getParam(param);
+    }
+},element.IFElement);
+
+
+element.createElement = function(type, option) {
+    return new element[type + 'Element'](option);
+};
+
+var parseHTMLTemplate = function(source) {
+    var chunks = [];
+    var createElement = element.createElement;
+    var root  = createElement('ROOT', {
+        closeTag: false
+    });
+    var matcher = CHUNK_REGEXP_ATTRIBUTE;
+    chunks.push(root);
+
+    while (source.length > 0) {
+        var results = matcher(source);
+        if (!results) {
+            chunks.push(createElement('TEXT', source));
+            source = '';
+            break;
+        }
+        var index = 0;
+        var fullText = results.fullText;
+        if ((index = source.indexOf(fullText)) > 0) {
+            var text = source.slice(0, index);
+            chunks.push(createElement('TEXT', text));
+            source = source.slice(index);
+        };
+        var attr,name,value;
+        if ( results.attribute_name ) {
+            name  = results.attribute_name.toLowerCase();
+            value = results.attribute_value;
+            attr  = {};
+            attr[name]      = value;
+            attr['default'] = results['default'];
+            attr['escape']  = results['escape'];
+        } else {
+            attr = undefined;
+        }
+        chunks.push(createElement(results.tag_name, {
+            'attributes': attr,
+            'closeTag'  : results.close,
+            'parent'    : this
+        }));
+        source = source.slice(fullText.length);
+    };
+    chunks.push(createElement('ROOT', {
+        closeTag: true
+    }));
+    return chunks;
+};
+
+module.exports.getFunctionText = function(chunksOrSource){
+    var chunks = util.isString(chunksOrSource) ? parseHTMLTemplate( chunksOrSource ) : chunksOrSource;
+    var codes = [];
+    for(var i=0,l=chunks.length;i<l;i++){codes.push(chunks[i].getCode());};
+    return codes.join('\n');
+};
+
+module.exports.compileFunctionText = function(functionText){
+    return util.curry(new Function('cache','param','funcs',functionText),cache);
+};
+
+
+
+ns.provide(module.exports);
+});
+
+Namespace('brook.view.htmltemplate')
+.use('brook.view.htmltemplate.core *')
+.define(function(ns){
+    var merge =  function(origin,target){
+        for(var prop in target ){
+            if( !target.hasOwnProperty(prop) )
+                continue;
+            origin[prop] = target[prop];
+        }
+    };
+    var meta = {   
+        '\b': '\\b',
+        '\t': '\\t',
+        '\n': '\\n',
+        '\f': '\\f',
+        '\r': '\\r',
+        '"' : '\\"',
+        '\\': '\\\\'
+    };
+    var quote = function(str) {
+        return '"' + str.split('').map(function(e){return meta[e] ? meta[e] : e ;}).join('') +'"';
+    };
+    var GLOBAL_FUNC = {
+        __escapeHTML:function(str){
+            return str
+                .toString()
+                .replace(/&/g,'&amp;')
+                .replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;')
+                .replace(/'/g, '&#039;')
+                .replace(/"/g, '&quot;');
+        },
+        __escapeJS:function(str){
+            return quote(str);
+        },
+        __escapeURL:function(str){
+            return encodeURI(str);
+        },
+        __escapeNONE:function(str){
+            return str;
+        },
+        __include : function(name,param,func){
+            var tmpl = Klass.getByElementId(name);
+            if( !tmpl ){
+                return;
+            }
+            tmpl.param(param);
+            tmpl.registerFunction(func);
+            return tmpl.output();
+        }
+    };
+    var Klass = function _HTMLTemplate(func){
+        this._param  = {};
+        this._funcs  = {};merge(this._funcs,GLOBAL_FUNC);
+        this._output = func;
+    };
+    merge( Klass.prototype , {
+        param : function(obj){
+            merge( this._param , obj );
+        },
+        registerFunction :function(name,func){
+            this._funcs[name] = func;
+        },
+        output : function(){
+            return this._output( this._param , this._funcs );
+        }
+    } );
+
+    merge( Klass , {
+        cache : {},
+        get : function(source){
+            var uniqId = 'autocache:' + Klass.hashFunction(source);
+            var func = Klass.resolve( uniqId );
+            if( func )
+                return new Klass( func );
+            return new Klass( Klass.reserve( uniqId , source ) );
+        },
+        resolve : function(name){
+            return Klass.cache[name];
+        },
+        reserve : function(name,source){
+            var functionBody = ns.getFunctionText(source);
+            Klass.cache[name] = ns.compileFunctionText(functionBody );
+            return Klass.cache[name];
+        },
+        getByElementId : function(elementId){
+            var uniqId = 'dom:' + elementId;
+            var func   = Klass.resolve( uniqId );
+            if( func ){ return new Klass( func ); }
+            var element = document.getElementById( elementId );
+            if( !element ){ return undefined;}
+
+            var source = Array.prototype.slice.call( element.childNodes || [] )
+                .filter(function(e){ return e.nodeType == Node.COMMENT_NODE })
+                .map(function(e){return e.data;})
+                .join('');
+
+            return new Klass( Klass.reserve( uniqId , source ) );
+        },
+        hashFunction  : function(string){
+            var max = (1 << 31);
+            var length = string.length;
+            var ret    = 34351;
+            var pos    = 'x';
+            for (var i = 0; i < length; i++) {
+                var c = string.charCodeAt(i);
+                ret *= 37;
+                pos ^= c;
+                ret += c;
+                ret %= max;
+            }
+            return ret.toString(16)+'-'+(pos & 0x00ff).toString(16) ;
+        },
+        registerFunction : function(name,func){
+            GLOBAL_FUNC[name] = func;
+        }
+    });
+
+    
+    ns.provide({
+        HTMLTemplate : Klass
+    });
+});
+
 Namespace('brook.dom.compat')
 .define(function(ns){
     var dataset = (function(){
@@ -463,6 +1087,11 @@ Namespace('brook.dom.compat')
         classList : classList
     });
 });
+Namespace('brook.dom.gateway')
+.define(function(ns){
+
+    ns.provide({});
+});
 Namespace('brook.widget')
 .use('brook promise')
 .use('brook.channel *')
@@ -533,445 +1162,4 @@ Namespace('brook.dom.event')
 .use('brook promise')
 .define(function(ns){
 
-});
-Namespace('brook.net.httprequester').define(function(ns){
-    var merge = function(aObj,bObj){
-        for( var p in bObj ){
-            if( bObj.hasOwnProperty( p ) ){
-                aObj[p] = bObj[p];
-            }
-        }
-        return aObj;
-    };
-
-    /**
-     * onreadystatechange State Constants
-     */
-    if (XMLHttpRequest.UNSENT === undefined) XMLHttpRequest.UNSENT = 0;
-    if (XMLHttpRequest.OPENED === undefined) XMLHttpRequest.OPENED = 1;
-    if (XMLHttpRequest.HEADERS_RECEIVED === undefined) XMLHttpRequest.HEADERS_RECEIVED = 2;
-    if (XMLHttpRequest.LOADING === undefined) XMLHttpRequest.LOADING = 3;
-    if (XMLHttpRequest.DONE === undefined) XMLHttpRequest.DONE = 4;
-
-
-    /**
-     * Class HTTPRequester
-     */
-    function HTTPRequester() {
-        this.__xhr = null;
-        this.__lastRequestUrl = null;
-        this.__options = {};
-        this.__response = null;
-    }
-
-    HTTPRequester.POST = 'POST';
-    HTTPRequester.GET  = 'GET';
-    HTTPRequester.requesters = {};
-
-    HTTPRequester.AJAX_DEFAULT_REQUEST_HEADERS = {"X-Requested-With": "XmlHttpRequest"};
-
-    /**
-     * Static getRequester
-     * @param {String} key
-     */
-    HTTPRequester.getRequester = function(key){
-        var requester;
-        if (HTTPRequester.requesters[key] === undefined) {
-            requester = new HTTPRequester();
-            HTTPRequester.requesters[key] = requester;
-        }
-        else {
-            throw new Error('this key exist.');
-        }
-        return requester;
-    };
-
-    /**
-     * Static abortAll
-     * abort all running request
-     */
-    HTTPRequester.abortAll = function() {
-        Object.keys(HTTPRequester.requesters).forEach(function(key){
-            HTTPRequester.requesters[key].abort();
-        },this);
-    };
-
-    /**
-     * Public abort
-     */
-    HTTPRequester.prototype.abort = function() {
-        this.__xhr.onreadystatechange = null;
-        this.__xhr.abort();
-    };
-
-    /**
-     * Public request
-     */
-    HTTPRequester.prototype.request = function(options, callback) {
-        var deferred;
-        if ( Deferred ) {
-            deferred = new Deferred();
-        }
-
-        /**
-         * マルチブラウザ対応する場合、
-         * ここで例のtry/catchを実装してください。
-         *
-         * 本来、 __xhr は同名 HTTPRequester で再利用可能なはずですが、
-         * readystatechange イベントを remove できないというバグなのか仕様があり、
-         * request の度に初期化しています。
-         *
-         * onreadystatechagne = function(){...} ではなく、 __xhr.(add|remove)EventListener('readystatechange') も試しましたが、
-         * Firefox/Chrome ともに正常に remove できず諦めました。
-         */
-        this.__xhr = new XMLHttpRequest();
-
-        this.__setOptions(options);
-        this.__setHandler(callback, deferred);
-        this.__open();
-        this.__setHeaders();
-        this.__send();
-
-        return deferred ? deferred : this;
-    };
-
-    /**
-     * Public getResponse
-     * @param {HTTPResponse}
-     */
-    HTTPRequester.prototype.getResponse = function() {
-        return this.__response;
-    };
-
-    /**
-     * Private __setOptions
-     */
-    HTTPRequester.prototype.__setOptions = function(options) {
-        if (!options) {
-            throw new Error('illegal options.')
-        }
-
-        // method(default == "POST")
-        this.__options.method = options.method ? options.method : HTTPRequester.POST;
-
-        // url(default null, throw error)
-        if (!options.url) {
-            throw new Error('HTTPRequester.request() needs "url" option.');
-        }
-        this.__options.url = options.url;
-
-        // asynchronous(default == true)
-        this.__options.asynchronous = ( typeof options.asynchronous == 'boolean' ) ? options.asynchronous : true;
-
-        // requestContentType(default == 'application/x-www-form-urlencoded; charset=UTF-8')
-        this.__options.requestContentType = options.requestContentType ? options.requestContentType : 'application/x-www-form-urlencoded; charset=UTF-8';
-
-        // noCache(default == true)
-        this.__options.noCache = ( typeof options.noCache == 'boolean' ) ? options.noCache : true;
-
-        // expectedResponseContentType(default == null)
-        this.__options.expectedResponseContentType = options.expectedResponseContentType ? options.expectedResponseContentType : null;
-
-        // paramGET(default == null)
-        this.__options.paramGET = options.paramGET ? options.paramGET : null;
-
-        // paramPOST(default == null)
-        this.__options.paramPOST = options.paramPOST ? options.paramPOST : null;
-
-        // otherRequestHeaders(default == null)
-        var otherRequestHeaders = HTTPRequester.AJAX_DEFAULT_REQUEST_HEADERS;
-        this.__options.otherRequestHeaders = options.otherRequestHeaders ? merge(otherRequestHeaders, options.otherRequestHeaders) : otherRequestHeaders;
-    };
-
-    /**
-     * Private __setHandler
-     * @param {Function} callback
-     */
-    HTTPRequester.prototype.__setHandler = function(callback, deferred) {
-        this.__xhr.onabort = function(evt) {
-            // 特に実装無し。
-            // 必要になったら実装してください。
-        };
-        this.__xhr.onreadystatechange = function(evt) {
-            if ( this.__xhr.readyState == XMLHttpRequest.DONE ) {
-                this.__response = new HTTPResponse(this.__xhr);
-                this.__xhr.onreadystatechange = null;
-
-                callback(this.__response, deferred);
-            }
-        }.bind(this);
-    };
-
-    /**
-     * Private __open
-     */
-    HTTPRequester.prototype.__open = function() {
-        var query = this.__options.paramGET ? this.__options.paramGET.toQueryString() : '';
-        var requestUrl
-            = this.__options.url
-            + ((this.__options.url.indexOf('?') == -1) ? '?' : '&')
-            + (this.__options.paramGET ? this.__options.paramGET.toQueryString() : '')
-            + (this.__options.noCache ? '&'+Date.now() : '');
-        this.__lastRequestUrl = requestUrl;
-        this.__xhr.open(this.__options.method, requestUrl, this.__options.asynchronous);
-    };
-
-    /**
-     * Private __setHeaders
-     */
-    HTTPRequester.prototype.__setHeaders = function() {
-        // nocache
-        if (this.__options.noCache) {
-            this.__xhr.setRequestHeader("Cache-Control", "no-cache");
-        }
-
-        // requestContentType
-        if (this.__options.method == HTTPRequester.POST) {
-            this.__xhr.setRequestHeader('Content-Type', this.__options.requestContentType);
-        }
-
-        // other headers if any
-        if (this.__options.otherRequestHeaders) {
-            Object.keys(this.__options.otherRequestHeaders).forEach(function(key){
-                this.__xhr.setRequestHeader(key, this.__options.otherRequestHeaders[key]);
-            }, this);
-        }
-
-        // overrideMimeType
-        if (this.__options.expectedResponseContentType) {
-            this.__xhr.overrideMimeType(this.__options.expectedResponseContentType);
-        }
-    };
-
-    /**
-     * Private __send
-     */
-    HTTPRequester.prototype.__send = function() {
-        var postBody = null;
-        if ( this.__options.paramPOST != null && this.__options.method == HTTPRequester.POST ) {
-            postBody = (typeof(this.__options.paramPOST) == "string" || this.__options.paramPOST instanceof String) ? this.__options.paramPOST : this.__options.paramPOST.toQueryString();
-        }
-        this.__xhr.send(postBody);
-    };
-
-
-    /**
-     * HTTPResponse
-     * @param {XMLHttpRequest} xhr
-     */
-    function HTTPResponse(xhr) {
-        // status
-        // レスポンスが304の場合、Firefox 200
-        // Chrome 304
-        // prototype.js はサーバから 304 が返ってくる（Chrome）と onSuccess しない仕様。
-        // あまり XHR.status に頼らない方が良さそうです。
-        this.__status20x = ( xhr.status >= 200 && xhr.status < 300 );
-        this.statusCode = xhr.status;
-
-        // rawResponseText
-        this.__rawString = xhr.responseText;
-
-        // jsonize
-        this.__object = null;
-        if ( /javascript/.test(xhr.getResponseHeader('Content-Type'))  || /json/.test(xhr.getResponseHeader('Content-Type')) ) {
-            try {
-                this.__object = JSON.parse(this.__rawString.replace(/^\/\*-secure-([\s\S]*)\*\/\s*$/, '$1'));
-            }
-            catch(err) {}
-        }
-    }
-
-    /**
-     * Public is20x
-     * is 20x status code?
-     * @return {Boolean}
-     */
-    HTTPResponse.prototype.is20x = function() {
-        return (this.__status20x);
-    };
-
-    /**
-     * Public getObject
-     * get response parsed JSON Object
-     * @return {Object}
-     */
-    HTTPResponse.prototype.getObject = function() {
-        return this.__object;
-    };
-
-    /**
-     * Public getRawString
-     * get raw responseText
-     * @return {String}
-     */
-    HTTPResponse.prototype.getRawString = function() {
-        return this.__rawString;
-    };
-
-    ns.provide({
-        HTTPRequester : HTTPRequester,
-        HTTPResponse  : HTTPResponse
-    });
-});
-Namespace('brook.net.jsonrpc')
-.use('brook.net HTTPRequester')
-.define( function(ns){
-    var HTTPRequester = ns.HTTPRequester;
-    var VERSION = "2.0";
-    var REQUEST_CONTENT_TYPE = "application/json-rpc";
-    var ERROR_CODE = {
-        PARSE_ERROR      : -32700,
-        METHOD_NOT_FOUND : -32600,
-        INVALID_REQUEST  : -32601,
-        INVALID_PARAMS   : -32602,
-        INTERNAL_ERROR   : -32603
-    };
-    var K             = function(x){return x };
-    var emptyFunction = function(){};
-    var isErrorCode   = function(code){
-         return ( this.isFailure() && this.error.code == code );
-    };
-    var curry1st = function(proc,mock){
-        return function(){
-            var args = $A( arguments );
-            args.unshift( mock );
-            return proc.apply(this,args );
-        }
-    };
-
-    var Response = function _jsonrpcResponse ( value ){
-        this.id      = value.id;
-        this.result  = value.result;
-        this.error   = value.error;
-        this.jsonrpc = value.jsonrpc;
-        return this;
-    };
-    (function(){
-        this.isSuccess = function(){
-            return ( this.result && !this.error );
-        };
-        this.isFailure = function(){
-            return !this.isSuccess();
-        };
-        this.isMethodNotFound     =  curry1st(isErrorCode, ERROR_CODE.METHOD_NOT_FOUND ),
-        this.isParseError         =  curry1st(isErrorCode, ERROR_CODE.PARSE_ERROR ),
-        this.isInvalidRequest     =  curry1st(this.isErrorCode, ERROR_CODE.INVALID_REQUEST ),
-        this.isInvalidParams      =  curry1st(this.isErrorCode, ERROR_CODE.INVALID_PARAMS ),
-        this.isInternalError      =  curry1st(this.isErrorCode, ERROR_CODE.INTERNAL_ERROR ),
-        this.isNotification = function(){
-            return ( !this.id );
-        };
-        this.getErrorCode      =  function(){
-            if(this.isSuccess()){
-                throw("not error");
-            }
-            return this.error.code;
-        };
-        this.isSingleResponse  =  curry1st( K, true );
-        this.isBatchResponse   =  curry1st( K, false );
-    }).apply(Response.prototype);
-
-    var ResponseAggregator = function _jsonrpcResponseAggregator (arrayOfResponse ){
-        this.responseList = arrayOfResponse;
-        this.mapById      = arrayOfResponse.filter(function(e){
-            return (e.id) ? true : false;
-        }).reduce({},function(ret,e){
-            ret[e.id] = e;
-            return ret;
-        });
-        return this;
-    };
-    (function(){
-        this.isSuccess = function(){
-            return this.responseList.all(function(e){ return e.isSuccess();});
-        };
-        this.get = function(id){
-            return this.mapById[id];
-        };
-        this.isSingleResponse = curry1st(K,false);
-        this.isBatchResponse  = curry1st(K,true);
-    }).apply(ResponseAggregator.prototype);
-
-
-    var _composeResponse = function(obj){
-        if( obj instanceof Array ){
-            return new ResponseAggregator(obj.map(_composeResponse));
-        }else{
-            return new Response(obj);
-        }
-    };
-
-    var Client = function _jsonrpcClient(serviceEndPoint){
-        this.endPoint = serviceEndPoint;
-        this.requests = [];
-        this.addedId  = {};
-    };
-    (function(){
-        this._onSuccess = function(callback,responseObject){
-            callback( _composeResponse( responseObject ));
-        };
-        this._onFailure = function(){
-            throw('request failure');
-        };
-        this._onNotification = emptyFunction;
-        this.add =function(methodName,params,id){
-            var requestId = id || ( this.requests.length )
-            if( this.addedId[requestId] ){
-                throw('same request id used');
-            }
-            this.addedId[requestId] = true;
-            this.requests.push({
-               jsonrpc : VERSION,
-               method  : methodName,
-               params  : params,
-               id      : requestId
-            });
-            return this;
-        };
-        this.notify = function(methodName,params){
-            this.requests.push({
-                jsonrpc : VERSION,
-                method  : methodName,
-                params  : params,
-                id      : null
-            });
-            return this;
-        };
-        this.execute = function (callback){
-            var requestJSON = JSON.stringify(
-                (this.requests.length > 1) 
-                 ? this.requests  
-                 : this.requests[0] );
-
-            var _self = this;
-            this.requests = [];
-            this.addedId  = {};
-            (new HTTPRequester).request({
-                method: HTTPRequester.POST,
-                url: this.endPoint,
-                asynchronous: true,
-                paramPOST: requestJSON,
-                otherRequestHeaders: null
-            }, function(response){
-                if (response.is20x()) {
-                    var responseJSON = JSON.parse(response.getRawString());
-                    this._onSuccess(callback,responseJSON);
-                }
-                else {
-                    this._onFailure(responseJSON);
-                }
-            }.bind(this));
-        };
-        this.call = function(methodName,params,callback){
-            return this
-                .add(methodName, params, false)
-                .execute(callback);
-        };
-    }).apply(Client.prototype);
-    Client.createService = function(serviceEndPoint, params){
-        return new Client(serviceEndPoint + ((params) ? '?'+params.toQueryString():''));
-    };
-    ns.provide( {
-        JSONRPC  : Client
-    });
 });
