@@ -958,11 +958,13 @@ Namespace('brook.dom.compat')
         var wrapper = function(element){
             return element.dataset;
         };
-        if( HTMLElement.prototype.__lookupGetter__('dataset') ) 
-            return wrapper;
-        if( HTMLElement.prototype.dataset ) 
-            return wrapper;
-
+        if( window["HTMLElemenT"] && HTMLElement.prototype ){
+            var proto = HTMLElement.prototype;
+            if( proto.dataset ) 
+                return wrapper;
+            if( proto.__lookupGetter__ && proto.__lookupGetter__('dataset') ) 
+                return wrapper;
+        }
         var camelize = function(string){
             return string.replace(/-+(.)?/g, function(match, chr) {
               return chr ? chr.toUpperCase() : '';

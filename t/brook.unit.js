@@ -8,11 +8,13 @@ Namespace()
 .apply(function(ns){
 
 test('exports',function(){
-    var exports = "promise wait mapper debug cond match filter lamda VERSION";
-    expect( exports.split(/ /g).length);
-    exports.split(/ /g).forEach(function(e){
+    var exports = "promise wait mapper debug cond match filter lamda VERSION".split(/ /g);
+
+    expect( exports.length);
+    for( var i = 0,l=exports.length;i<l;i++){
+        var e = exports[i];
         ok(ns[e],e);
-    });
+    }
 });
 
 test('promise',function(){
