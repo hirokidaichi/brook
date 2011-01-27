@@ -191,21 +191,17 @@ element.Base = util.defineClass({
     },
     mergeOption : function(option){
         util.merge(this,option);
-        this['closeTag'] =(this['closeTag'])? true: false;
+        this['isCloseTag'] =(this['isCloseTag'])? true: false;
     },
     isParent : util.emptyFunction,
     execute  : util.emptyFunction,
-    isClose  : function() {
-        return this['closeTag'] ? true: false;
-    },
-
     getCode: function(e) {
         return "void(0);";
     },
     toString: function() {
         return [
             '<' ,
-            ((this.closeTag) ? '/': '') ,
+            ((this.isCloseTag) ? '/': '') ,
             this.type ,
             ((this.hasName) ? ' NAME=': '') ,
             ((this.name) ? this.name: '') ,
@@ -296,7 +292,7 @@ util.merge( element , {
     ROOTElement: util.defineClass({
         type: 'root',
         getCode: function() {
-            if (this.closeTag) {
+            if (this.isCloseTag) {
                 return 'return $_R.join("");';
             } else {
                 return [
@@ -327,7 +323,7 @@ util.merge( element , {
             return this._ID;
         },
         getCode: function() {
-            if (this.closeTag) {
+            if (this.isCloseTag) {
                 return ['}','$_T = $_C.pop();'].join('');
             } else {
                 var id = this.getLoopId();
@@ -351,8 +347,8 @@ util.merge( element , {
     VARElement: util.defineClass({
         type: 'var',
         getCode: function() {
-            if (this.closeTag) {
-                throw(new Error('HTML.Template ParseError'));
+            if (this.isCloseTag) {
+                throw(new Error('HTML.Template ParseError TMPL_VAR'));
             } else {
                 return '$_R.push(' + this.getParam() + ');';
             }
@@ -365,7 +361,7 @@ util.merge( element , {
             return "!!" + this.getParam(param);
         },
         getCode: function() {
-            if (this.closeTag) {
+            if (this.isCloseTag) {
                 return '}';
             } else {
                 return 'if(' + this.getCondition() + '){';
@@ -376,8 +372,8 @@ util.merge( element , {
     ELSEElement: util.defineClass( {
         type: 'else',
         getCode: function() {
-            if (this.closeTag) {
-                throw(new Error('HTML.Template ParseError'));
+            if (this.isCloseTag) {
+                throw(new Error('HTML.Template ParseError No Close Tag for TMPL_ELSE'));
             } else {
                 return '}else{';
             }
@@ -387,8 +383,8 @@ util.merge( element , {
     INCLUDEElement: util.defineClass({
         type: 'include',
         getCode: function() {
-            if (this.closeTag) {
-                throw(new Error('HTML.Template ParseError'));
+            if (this.isCloseTag) {
+                throw(new Error('HTML.Template ParseError No Close Tag for TMPL_INCLUDE'));
             } else {
                 var name = '"'+(this.attributes['name'])+'"';
                 return [
@@ -400,11 +396,11 @@ util.merge( element , {
 
     TEXTElement: util.defineClass({
         type: 'text',
-        closeTag: false,
+        isCloseTag: false,
         initialize : function(option){this.value = option;},
         getCode: function() {
-            if (this.closeTag) {
-                throw(new Error('HTML.Template ParseError'));
+            if (this.isCloseTag) {
+                throw(new Error('HTML.Template ParseError No Close Tag for TEXT'));
             } else {
                 cache.STRING_FRAGMENT.push(this.value);
                 return '$_R.push($_S['+(cache.STRING_FRAGMENT.length-1)+']);';
@@ -416,8 +412,8 @@ util.merge( element , {
 element.ELSIFElement = util.defineClass({
     type: 'elsif',
     getCode: function() {
-        if (this.closeTag) {
-            throw(new Error('HTML.Template ParseError'));
+        if (this.isCloseTag) {
+            throw(new Error('HTML.Template ParseError No Close Tag for TMPL_ELSIF'));
         } else {
             return '}else if(' + this.getCondition() + '){';
         }
@@ -440,7 +436,7 @@ var parseHTMLTemplate = function(source) {
     var chunks = [];
     var createElement = element.createElement;
     var root  = createElement('ROOT', {
-        closeTag: false
+        isCloseTag: false
     });
     var matcher = CHUNK_REGEXP_ATTRIBUTE;
     chunks.push(root);
@@ -472,13 +468,13 @@ var parseHTMLTemplate = function(source) {
         }
         chunks.push(createElement(results.tag_name, {
             'attributes': attr,
-            'closeTag'  : results.close,
+            'isCloseTag'  : results.close,
             'parent'    : this
         }));
         source = source.slice(fullText.length);
     };
     chunks.push(createElement('ROOT', {
-        closeTag: true
+        isCloseTag: true
     }));
     return chunks;
 };
@@ -486,7 +482,7 @@ var parseHTMLTemplate = function(source) {
 module.exports.getFunctionText = function(chunksOrSource){
     var chunks = util.isString(chunksOrSource) ? parseHTMLTemplate( chunksOrSource ) : chunksOrSource;
     var codes = [];
-    for(var i=0,l=chunks.length;i<l;i++){codes.push(chunks[i].getCode());};
+    for(var i=0,l=chunks.length;i<l;i++){codes.push(chunks[i].getCode());}
     return codes.join('\n');
 };
 
