@@ -1,14 +1,6 @@
 Namespace('brook.channel')
 .use('brook promise')
 .define(function(ns){
-    
-    var channels = {};
-    var queues   = {};
-    var register = function(hash,name,val){
-        if(!hash[name])
-            hash[name] = [];
-        hash[name].push(val);
-    };
     var Channel = function(){
         this.queue = [];
         this.promises = [];

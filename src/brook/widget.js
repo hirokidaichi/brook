@@ -5,7 +5,7 @@ Namespace('brook.widget')
 .use('brook.dom.compat *')
 .define(function(ns){
     var TARGET_CLASS_NAME = 'widget';
-    var getElementsByClassName = ns.getElementsByTagName;
+
     var classList = ns.classList;
     var dataset   = ns.dataset;
     var channel   = ns.channel;
@@ -23,7 +23,7 @@ Namespace('brook.widget')
         var map = {};
         for( var i = 0,l = widgetElements.length;i<l;i++){
             var widget = widgetElements[i];
-            removeClassName(TARGET_CLASS_NAME,widget);
+            removeClassName((targetClassName||TARGET_CLASS_NAME),widget);
             var dataset = ns.dataset(widget);
             if( !dataset.widgetNamespace ) continue;
             if( !map[dataset.widgetNamespace] ) map[dataset.widgetNamespace] = [];
