@@ -66,7 +66,22 @@ Namespace('brook.view.htmltemplate')
             return this._output( this._param , this._funcs );
         }
     } );
-
+    var _getSourceFromElement = function(element){
+        var children = Array.prototype.slice.call( element.childNodes || [] );
+        var result = [];
+        for ( var i =0,l=children.length;i<l;i++){
+            var e = children[i];
+            if( e.nodeType != Node.COMMENT_NODE ){
+                continue;
+            }
+            result.push( e.data );
+        }
+        return result.join('');
+    };
+    var _getFunctionTextFromElement = function( element ) {
+        var elementId  = element.id;
+        return ns.getFunctionText(_getSourceFromElement( element ));
+    };
     merge( Klass , {
         cache : {},
         get : function(source){
@@ -74,14 +89,15 @@ Namespace('brook.view.htmltemplate')
             var func = Klass.resolve( uniqId );
             if( func )
                 return new Klass( func );
-            return new Klass( Klass.reserve( uniqId , source ) );
+            var functionBody   = ns.getFunctionText(source);
+            var outputFunction = ns.compileFunctionText(functionBody );
+            return new Klass( Klass.reserve( uniqId , outputFunction ) );
         },
         resolve : function(name){
             return Klass.cache[name];
         },
-        reserve : function(name,source){
-            var functionBody = ns.getFunctionText(source);
-            Klass.cache[name] = ns.compileFunctionText(functionBody );
+        reserve : function(name,outputFunction){
+            Klass.cache[name] = outputFunction;
             return Klass.cache[name];
         },
         getByElementId : function(elementId){
@@ -89,14 +105,11 @@ Namespace('brook.view.htmltemplate')
             var func   = Klass.resolve( uniqId );
             if( func ){ return new Klass( func ); }
             var element = document.getElementById( elementId );
-            if( !element ){ return undefined;}
-
-            var source = Array.prototype.slice.call( element.childNodes || [] )
-                .filter(function(e){ return e.nodeType == Node.COMMENT_NODE })
-                .map(function(e){return e.data;})
-                .join('');
-
-            return new Klass( Klass.reserve( uniqId , source ) );
+            if( !element ){ return undefined; }
+            
+            var functionBody = _getFunctionTextFromElement( element );
+            var outputFunction = ns.compileFunctionText(functionBody );
+            return new Klass( Klass.reserve( uniqId , outputFunction ) );
         },
         hashFunction  : function(string){
             var max = (1 << 31);

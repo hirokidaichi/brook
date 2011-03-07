@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+    <title>Brook Core Test</title>
+    <script src="../lib/namespace.js"></script>
+<script>
+    Date.now = function(){ return (new Date).getTime()};
+    document.writeln([
+        "<script ",
+        "src='",
+        "../build/brook.js?",
+        Date.now(),
+        "'></script",">"
+    ].join(''));
+</script>
+<script src="tlib/qunit/qunit.js"></script>
+<link rel="stylesheet" href="tlib/qunit/qunit.css">
+</head>
+<body>
+
+<div id="test01_tmpl" class="HTML_TEMPLATE"><!--<TMPL_LOOP NAME="loop"><TMPL_VAR NAME="test"></TMPL_LOOP>*--></div>
+<div id="test02_tmpl" class="HTML_TEMPLATE"><!--hello<TMPL_LOOP NAME='outer'><TMPL_INCLUDE NAME='test01_tmpl'></TMPL_LOOP>hello--></div>
+<div id="test03_tmpl" ><!--<TMPL_LOOP NAME="loop"><TMPL_VAR NAME="test"></TMPL_LOOP>*--></div>
+<div id="test04_tmpl" class="HTML_TEMPLATE"></div>
+ <h1 id="qunit-header">Brook-Core</h1>
+ <h2 id="qunit-banner"></h2>
+ <h2 id="qunit-userAgent"></h2>
+ <ol id="qunit-tests"></ol>
+</body>
+<script src="brook.view.htmltemplate.unit.js"></script>
+</html>
