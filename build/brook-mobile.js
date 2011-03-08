@@ -835,8 +835,15 @@ Namespace('brook.view.htmltemplate')
         '"' : '\\"',
         '\\': '\\\\'
     };
+    var _map = function(list,mapper){
+        var result = [];
+        for( var i=0,l= list.length;i<l;i++){
+            result.push( mapper( list[i] ) );
+        }
+        return result;
+    };
     var quote = function(str) {
-        return '"' + str.split('').map(function(e){return meta[e] ? meta[e] : e ;}).join('') +'"';
+        return '"' + _map(str.split(''),function(e){return meta[e] ? meta[e] : e ;}).join('') +'"';
     };
     var GLOBAL_FUNC = {
         __escapeHTML:function(str){
@@ -883,12 +890,13 @@ Namespace('brook.view.htmltemplate')
             return this._output( this._param , this._funcs );
         }
     } );
+    var COMMENT_NODE = ( 'Node' in window )? Node.COMMENT_NODE : 8;
     var _getSourceFromElement = function(element){
-        var children = Array.prototype.slice.call( element.childNodes || [] );
+        var children = element.childNodes || [] ;
         var result = [];
         for ( var i =0,l=children.length;i<l;i++){
             var e = children[i];
-            if( e.nodeType != Node.COMMENT_NODE ){
+            if( e.nodeType != COMMENT_NODE ){
                 continue;
             }
             result.push( e.data );
