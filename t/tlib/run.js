@@ -1,40 +1,55 @@
-function nextTest() {
-    var files = JSON.parse(phantom.state);
-    if (files.length > 1) {
-        files.shift();
-        phantom.state = JSON.stringify(files);
+function setState(obj) {
+    phantom.state = JSON.stringify(obj);
+}
+
+function getState() {
+    return JSON.parse(phantom.state);
+}
+
+function nextTest(passed, failed) {
+    var state = getState();
+    var files = state.files;
+
+    files.shift();
+    setState({
+        files: files,
+        passed: state.passed + passed,
+        failed: state.failed + failed
+    });
+
+    if (files[0]) {
         phantom.open(files[0]);
     } else {
-        phantom.exit(0);
+        phantom.exit(getState().failed > 0);
     }
 }
 
 function qunitWatcher() {
     var el = document.getElementById('qunit-testresult');
-    var failed;
+    var passed, total, failed;
 
     if (el && el.innerText.match('completed')) {
-        console.log(el.innerText.replace(/^/mg, '  '));
         try {
             failed = el.getElementsByClassName('failed')[0].innerHTML;
         } catch (e) {
             ;
         }
 
-        if (parseInt(failed, 10) == 0) {
-            nextTest();
-        } else {
-            phantom.exit(1);
-        }
+        var argv = ['passed', 'failed'].map(function (s) {
+            var html = el.getElementsByClassName(s)[0].innerHTML;
+            return parseInt(html, 10);
+        });
+        console.log(argv.join('\t') + '\t' + location.href);
+        nextTest.apply(null, argv);
     }
 }
 
 
 if (! phantom.state) {
     var files = phantom.args;
-    phantom.state = JSON.stringify(files);
+    setState({ files: files });
+    console.log('Passed\tFailed');
     phantom.open(files[0]);
 } else {
-    console.log(location.href);
     setInterval(qunitWatcher, 100);
 }
