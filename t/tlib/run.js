@@ -3,7 +3,11 @@ function setState(obj) {
 }
 
 function getState() {
-    return JSON.parse(phantom.state);
+    if (phantom.state) {
+        return JSON.parse(phantom.state);
+    } else {
+        return null;
+    }
 }
 
 function nextTest(passed, failed) {
@@ -11,16 +15,22 @@ function nextTest(passed, failed) {
     var files = state.files;
 
     files.shift();
-    setState({
+    var state = {
         files: files,
         passed: state.passed + passed,
         failed: state.failed + failed
-    });
+    };
 
     if (files[0]) {
+        setState(state);
         phantom.open(files[0]);
     } else {
-        phantom.exit(getState().failed > 0);
+        console.log([ state.passed, 'tests of',
+                      state.passed + state.failed,
+                      'passed,',
+                      state.failed,
+                      'failed.' ].join(' '));
+        phantom.exit(state.failed > 0);
     }
 }
 
@@ -44,10 +54,10 @@ function qunitWatcher() {
     }
 }
 
-
-if (! phantom.state) {
+if (! getState()) {
     var files = phantom.args;
     setState({ files: files });
+
     console.log('Passed\tFailed');
     phantom.open(files[0]);
 } else {
