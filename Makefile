@@ -39,3 +39,7 @@ $(MIN) : \
 	$(MOBILE)
 	perl ./bin/minify < $^ > $@
 
+PHANTOMJS ?= phantomjs
+
+test:
+	$(PHANTOMJS) t/tlib/run.js $(wildcard t/*.html)
