@@ -16,12 +16,12 @@
       margin: 0 auto;
       width: 700px;
     }
-    h1 { font-size: 3.8em; color: #8721b0; margin-bottom: 3px; }
+    h1 { font-size: 3.8em; color: #004499; margin-bottom: 3px; }
     h1 .small { font-size: 0.4em; }
     h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: #8721b0; }
-    h3 { text-align: center; color: #8721b0; }
-    a { color: #8721b0; }
+    h2 { font-size: 1.5em; color: #004499; }
+    h3 { text-align: center; color: #004499; }
+    a { color: #004499; }
     .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
     .download { float: right; }
     pre { background: #000; color: #fff; padding: 15px;}
@@ -42,24 +42,71 @@
         <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
     </div>
 
-    <h1><a href="http://github.com/hirokidaichi/brook">brook</a>
-      <span class="small">by <a href="http://github.com/hirokidaichi">hirokidaichi</a></span></h1>
-
+    <h1><a href="http://github.com/hirokidaichi/brook">brook</a></h1>
     <div class="description">
-      javascript-large-development-framework
+      a javascript framework for large scale development
     </div>
+    <p>
+        "brook" is a javascript framework.
+    </p>
+    <h2>Document</h2>
+    <p><a href="./doc/index.html">document</a></p>
+    <h2>Demo</h2>
+    <p><a href="./sample/index.html">simple demo</a></p>
+    <h2>Sample Code </h2>
+    you can write the application using MVC design pattern easily,<br />
+    like this:
+    <pre>
+Namespace('sample.widget')
+.use('brook *')
+.use('brook.util *')
+.use('brook.channel *')
+.use('sample.model getModel')
+.use('sample.view getView')
+.define(function(ns){
 
-    <p>xx</p><h2>Dependencies</h2>
-<p>yy</p>
-<h2>Document</h2>
-<p><a href="/doc/index.html">document</a></p>
-<h2>License</h2>
-<p>xz</p>
-<h2>Authors</h2>
-<p>Daichi Hiroki (hirokidaichi@gmail.com)<br/>Kato Kazuyoshi (kato.kazuyoshi@gmail.com)<br/><br/>      </p>
-<h2>Contact</h2>
-<p>hirokidaichi (hirokidaichi@gmail.com)<br/>      </p>
+var model = ns.getModel();
+var view  = ns.getView();
+var observeChannel = ns.observeChannel;
+var observeEvent = function(element,eventName,promise){
+    element.addEventListener(eventName,function(evt){promise.run(evt)},false );
+};
+var updateHTML = function(element){
+    return ns.promise(function(n,v){
+        element.innerHTML = v; n();
+    });
+};
+ns.provide({
+    registerElement:function(element){
 
+        // handle user action and notify to the model
+        // View to Model
+        observeEvent( element, 'click',viaEvent.bind( model.notify('update'));
+
+        // observing global channel ,when receiving some messages , notify to the model
+        // View to Model
+        observeChannel( 'shake',viaChannel.bind( model.notify('update') ));
+
+        // observing model updates
+        // Model to View
+        model.observe( 'update',
+            view
+                .bind( updateHTML(element) )
+                .bind( ns.bindAllWidget )
+        );
+    }
+});
+
+});
+
+    </pre>
+    <h2>Authors</h2>
+    <p>Daichi Hiroki (hirokidaichi@gmail.com)<br/>Kato Kazuyoshi (kato.kazuyoshi@gmail.com)<br/><br/>      </p>
+    <h2>Contact</h2>
+    <p>hirokidaichi (hirokidaichi@gmail.com)<br/>      </p>
+
+    <h2>Dependencies</h2>
+    <p><ul><li><a href="https://github.com/hirokidaichi/namespace-js">namespace-js</a></li></ul></p>
     <h2>Download</h2>
     <p>
       You can download this project in either
