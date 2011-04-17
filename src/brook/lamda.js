@@ -1,3 +1,14 @@
+/**
+@fileOverview brook.lamda
+@author daichi.hiroki<hirokidaichi@gmail.com>
+*/
+
+
+/**
+@name brook.lamda
+@namespace details here
+*/
+
 Namespace('brook.lamda')
 .define(function(ns){
     var cache = {};

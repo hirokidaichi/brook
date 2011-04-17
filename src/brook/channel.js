@@ -1,3 +1,13 @@
+/**
+@fileOverview brook.channel
+@author daichi.hiroki<hirokidaichi@gmail.com>
+*/
+
+
+/**
+@name brook.channel
+@namespace details here
+*/
 Namespace('brook.channel')
 .use('brook promise')
 .define(function(ns){

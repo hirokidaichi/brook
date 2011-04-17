@@ -1,16 +1,40 @@
+/**
+@fileOverview brook.util
+@author daichi.hiroki<hirokidaichi@gmail.com>
+*/
+
+
+/**
+@name brook.util
+@namespace details here
+*/
 Namespace('brook.util')
 .use('brook promise')
 .define(function(ns){
+    /**#@+
+     * @methodOf brook.util
+     */
+    /**
+     * @name mapper
+     * @param {Promise} promise
+     */
     var mapper = function(f){
         return ns.promise(function(next,val){
             return next(f(val));
         });
     };
+    /**
+     * @name filter
+     * @param {Promise} promise
+     */
     var filter = function(f){
         return ns.promise(function(next,val){
             if( f(val) ) return next(val);
         });
     };
+    /**
+     * @name takeBy
+     */
     var takeBy = function(by){
         var num = 1;
         var queue = [];
@@ -22,7 +46,9 @@ Namespace('brook.util')
             }
         });
     };
-
+    /**
+     * @name scatter
+     */
     var scatter = function(){
         return ns.promise(function(next,val){
             for( var i = 0, l = val.length;i<l;i++){
@@ -30,6 +56,9 @@ Namespace('brook.util')
             }
         });
     };
+    /**
+     * @name wait
+     */
     var wait = function(msec){
         var msecFunc = ( typeof msec == 'function' )
             ? msec : function(){return msec};
@@ -113,6 +142,7 @@ Namespace('brook.util')
             },msecFunc());
         });
     };
+    /**#@-*/
     ns.provide({
         mapper  : mapper,
         filter  : filter,
