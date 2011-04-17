@@ -5,7 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="generator" content="JsDoc Toolkit" />
 		
-		<title>JsDoc Reference - brook</title>
+		<title>JsDoc Reference - brook.model._Model</title>
 
 		<style type="text/css">
 			/* default.css */
@@ -222,7 +222,7 @@ ul.inheritsList
 <!-- ============================== class title ============================ -->
 			<h1 class="classTitle">
 				
-				Namespace brook
+				Class brook.model._Model
 			</h1>
 
 <!-- ============================== class summary ========================== -->			
@@ -230,17 +230,17 @@ ul.inheritsList
 				
 				
 			
-				brookライブラリ群のルートとなる名前空間です。promiseの生成処理を持っています。
+				brook.model.createModelで生成されるインスタンスのインナークラス
 				
 				
-					<br /><i>Defined in: </i> <a href="../symbols/src/_Users_hirokidaichi_code_brook_src_brook.js.html">brook.js</a>.
+					<br /><i>Defined in: </i> <a href="../symbols/src/_Users_hirokidaichi_code_brook_src_brook_model.js.html">model.js</a>.
 				
 			</p>
 
 <!-- ============================== constructor summary ==================== -->			
 			
-			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class brook.">
-				<caption>Namespace Summary</caption>
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class brook.model._Model.">
+				<caption>Class Summary</caption>
 				<thead>
 					<tr>
 						<th scope="col">Constructor Attributes</th>
@@ -252,9 +252,9 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/brook.html#constructor">brook</a></b>
+								<b><a href="../symbols/brook.model._Model.html#constructor">brook.model._Model</a></b>()
 							</div>
-							<div class="description"></div>
+							<div class="description">mvcにおけるmodelインタフェースをもったクラス</div>
 						</td>
 					</tr>
 				</tbody>
@@ -263,41 +263,8 @@ ul.inheritsList
 
 <!-- ============================== properties summary ===================== -->
 			
-				
-				
-				
-				
-			
 
 <!-- ============================== methods summary ======================== -->
-			
-				
-				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class brook.">
-					<caption>Method Summary</caption>
-					<thead>
-						<tr>
-							<th scope="col">Method Attributes</th>
-							<th scope="col">Method Name and Description</th>
-						</tr>
-					</thead>
-					<tbody>
-					
-						<tr>
-							<td class="attributes">&lt;static&gt; &nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont">brook.<b><a href="../symbols/brook.html#.promise">promise</a></b>(next)
-								</div>
-								<div class="description">プロミスを生成するファクトリメソッドです。nextは、さらに次の処理を第一引数に受け取り、第二引数に前回の処理の結果を受け取ります。
-引数が無い場合は、データをそのまま次の処理に送るpromiseを生成します。</div>
-							</td>
-						</tr>
-					
-					</tbody>
-				</table>
-				
-				
-				
 			
 <!-- ============================== events summary ======================== -->
 			
@@ -306,15 +273,15 @@ ul.inheritsList
 			
 			<div class="details"><a name="constructor"> </a>
 				<div class="sectionTitle">
-					Namespace Detail
+					Class Detail
 				</div>
 				
 				<div class="fixedFont">
-						<b>brook</b>
+						<b>brook.model._Model</b>()
 				</div>
 				
 				<div class="description">
-					
+					mvcにおけるmodelインタフェースをもったクラス
 					
 				</div>
 				
@@ -337,61 +304,6 @@ ul.inheritsList
 
 <!-- ============================== method details ========================= -->		
 			
-				<div class="sectionTitle">
-					Method Detail
-				</div>
-				
-					<a name=".promise"> </a>
-					<div class="fixedFont">&lt;static&gt; 
-					
-					<span class="light">{Promise}</span>
-					<span class="light">brook.</span><b>promise</b>(next)
-					
-					</div>
-					<div class="description">
-						プロミスを生成するファクトリメソッドです。nextは、さらに次の処理を第一引数に受け取り、第二引数に前回の処理の結果を受け取ります。
-引数が無い場合は、データをそのまま次の処理に送るpromiseを生成します。
-						
-						
-					</div>
-					
-					
-					
-					<pre class="code">var p = ns.promise(function(next,value){ next(value+1)});</pre>
-					
-					<pre class="code">var p = ns.promise();</pre>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{function}</span> <b>next</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{Promise}</span> </dd>
-							
-							</dl>
-						
-						
-						
-
-					
-				
-			
 			
 <!-- ============================== event details ========================= -->		
 			
@@ -403,7 +315,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sun Apr 17 2011 23:47:16 GMT+0900 (JST)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sun Apr 17 2011 23:47:17 GMT+0900 (JST)
 		</div>
 	</body>
 </html>

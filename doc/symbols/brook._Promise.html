@@ -5,7 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="generator" content="JsDoc Toolkit" />
 		
-		<title>JsDoc Reference - brook.util</title>
+		<title>JsDoc Reference - brook._Promise</title>
 
 		<style type="text/css">
 			/* default.css */
@@ -222,7 +222,7 @@ ul.inheritsList
 <!-- ============================== class title ============================ -->
 			<h1 class="classTitle">
 				
-				Namespace brook.util
+				Class brook._Promise
 			</h1>
 
 <!-- ============================== class summary ========================== -->			
@@ -230,17 +230,17 @@ ul.inheritsList
 				
 				
 			
-				details here
+				brook.promiseで生成されるインスタンスのインナークラス
 				
 				
-					<br /><i>Defined in: </i> <a href="../symbols/src/_Users_hirokidaichi_code_brook_src_brook_util.js.html">util.js</a>.
+					<br /><i>Defined in: </i> <a href="../symbols/src/_Users_hirokidaichi_code_brook_src_brook.js.html">brook.js</a>.
 				
 			</p>
 
 <!-- ============================== constructor summary ==================== -->			
 			
-			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class brook.util.">
-				<caption>Namespace Summary</caption>
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class brook._Promise.">
+				<caption>Class Summary</caption>
 				<thead>
 					<tr>
 						<th scope="col">Constructor Attributes</th>
@@ -252,9 +252,12 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/brook.util.html#constructor">brook.util</a></b>
+								<b><a href="../symbols/brook._Promise.html#constructor">brook._Promise</a></b>()
 							</div>
-							<div class="description"></div>
+							<div class="description">実行する前の次の処理をもつオブジェクトです。
+Promiseインスタンスはbind関数で結合する事が出来ます。連続した非同期/同期の処理をデータの流れとして抽象化して結合する事が出来ます。
+subscribe/forEach/runなどの処理を実行するまでは、結合した処理は実行される事はありません。
+また、コンストラクタは公開されていません。brook.promiseがファクトリとなっています。</div>
 						</td>
 					</tr>
 				</tbody>
@@ -268,7 +271,7 @@ ul.inheritsList
 			
 				
 				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class brook.util.">
+				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class brook._Promise.">
 					<caption>Method Summary</caption>
 					<thead>
 						<tr>
@@ -279,45 +282,72 @@ ul.inheritsList
 					<tbody>
 					
 						<tr>
-							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont">brook.util.<b><a href="../symbols/brook.util.html#.filter">filter</a></b>(promise)
+								<div class="fixedFont"><b><a href="../symbols/brook._Promise.html#bind">bind</a></b>(promise)
 								</div>
 								<div class="description"></div>
 							</td>
 						</tr>
 					
 						<tr>
-							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont">brook.util.<b><a href="../symbols/brook.util.html#.mapper">mapper</a></b>(promise)
+								<div class="fixedFont"><b><a href="../symbols/brook._Promise.html#concat">concat</a></b>(promise)
 								</div>
 								<div class="description"></div>
 							</td>
 						</tr>
 					
 						<tr>
-							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont">brook.util.<b><a href="../symbols/brook.util.html#.scatter">scatter</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/brook._Promise.html#forEach">forEach</a></b>(promise)
 								</div>
 								<div class="description"></div>
 							</td>
 						</tr>
 					
 						<tr>
-							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont">brook.util.<b><a href="../symbols/brook.util.html#.takeBy">takeBy</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/brook._Promise.html#onError">onError</a></b>()
 								</div>
 								<div class="description"></div>
 							</td>
 						</tr>
 					
 						<tr>
-							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont">brook.util.<b><a href="../symbols/brook.util.html#.wait">wait</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/brook._Promise.html#ready">ready</a></b>(promise)
+								</div>
+								<div class="description"></div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/brook._Promise.html#run">run</a></b>(promise)
+								</div>
+								<div class="description"></div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/brook._Promise.html#setErrorHandler">setErrorHandler</a></b>(promise)
+								</div>
+								<div class="description"></div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/brook._Promise.html#subscribe">subscribe</a></b>(promise)
 								</div>
 								<div class="description"></div>
 							</td>
@@ -336,15 +366,18 @@ ul.inheritsList
 			
 			<div class="details"><a name="constructor"> </a>
 				<div class="sectionTitle">
-					Namespace Detail
+					Class Detail
 				</div>
 				
 				<div class="fixedFont">
-						<b>brook.util</b>
+						<b>brook._Promise</b>()
 				</div>
 				
 				<div class="description">
-					
+					実行する前の次の処理をもつオブジェクトです。
+Promiseインスタンスはbind関数で結合する事が出来ます。連続した非同期/同期の処理をデータの流れとして抽象化して結合する事が出来ます。
+subscribe/forEach/runなどの処理を実行するまでは、結合した処理は実行される事はありません。
+また、コンストラクタは公開されていません。brook.promiseがファクトリとなっています。
 					
 				</div>
 				
@@ -371,47 +404,11 @@ ul.inheritsList
 					Method Detail
 				</div>
 				
-					<a name=".filter"> </a>
-					<div class="fixedFont">&lt;static&gt; 
+					<a name="bind"> </a>
+					<div class="fixedFont">
 					
 					
-					<span class="light">brook.util.</span><b>filter</b>(promise)
-					
-					</div>
-					<div class="description">
-						
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{Promise}</span> <b>promise</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name=".mapper"> </a>
-					<div class="fixedFont">&lt;static&gt; 
-					
-					
-					<span class="light">brook.util.</span><b>mapper</b>(promise)
+					<b>bind</b>(promise)
 					
 					</div>
 					<div class="description">
@@ -443,11 +440,83 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name=".scatter"> </a>
-					<div class="fixedFont">&lt;static&gt; 
+					<a name="concat"> </a>
+					<div class="fixedFont">
 					
 					
-					<span class="light">brook.util.</span><b>scatter</b>()
+					<b>concat</b>(promise)
+					
+					</div>
+					<div class="description">
+						
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Promise}</span> <b>promise</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="forEach"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>forEach</b>(promise)
+					
+					</div>
+					<div class="description">
+						
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Promise}</span> <b>promise</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="onError"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>onError</b>()
 					
 					</div>
 					<div class="description">
@@ -468,11 +537,11 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name=".takeBy"> </a>
-					<div class="fixedFont">&lt;static&gt; 
+					<a name="ready"> </a>
+					<div class="fixedFont">
 					
 					
-					<span class="light">brook.util.</span><b>takeBy</b>()
+					<b>ready</b>(promise)
 					
 					</div>
 					<div class="description">
@@ -483,6 +552,17 @@ ul.inheritsList
 					
 					
 					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Promise}</span> <b>promise</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
 						
 						
 						
@@ -493,11 +573,11 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name=".wait"> </a>
-					<div class="fixedFont">&lt;static&gt; 
+					<a name="run"> </a>
+					<div class="fixedFont">
 					
 					
-					<span class="light">brook.util.</span><b>wait</b>()
+					<b>run</b>(promise)
 					
 					</div>
 					<div class="description">
@@ -508,6 +588,89 @@ ul.inheritsList
 					
 					
 					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Promise}</span> <b>promise</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setErrorHandler"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setErrorHandler</b>(promise)
+					
+					</div>
+					<div class="description">
+						
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Promise}</span> <b>promise</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="subscribe"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>subscribe</b>(promise)
+					
+					</div>
+					<div class="description">
+						
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Promise}</span> <b>promise</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
 						
 						
 						
@@ -530,7 +693,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sun Apr 17 2011 23:47:17 GMT+0900 (JST)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sun Apr 17 2011 23:47:16 GMT+0900 (JST)
 		</div>
 	</body>
 </html>
