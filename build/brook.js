@@ -1,9 +1,32 @@
+/**
+@fileOverview brook
+@author daichi.hiroki<hirokidaichi@gmail.com>
+*/
+
+
+/**
+@name brook
+@namespace details here
+*/
 Namespace('brook').define(function(ns){
     var VERSION = "0.01";
+    /**
+     * @class
+     * @name Promise
+     * @memberOf brook
+     */
     var Promise = function(next){
         this.next = next ||  function(next,val){ return next(val); };
     };
     (function(proto){
+    /**#@+
+     * @methodOf brook.Promise.prototype
+     */
+
+    /**
+     * @name concat
+     * @param {Promise} promise
+     */
     proto.concat = function(promise){
         var _before = this;
         var after  = promise;
@@ -12,6 +35,10 @@ Namespace('brook').define(function(ns){
         };
         return new Promise(next);
     };
+    /**
+     * @name bind
+     * @param {Promise} promise
+     */
     proto.bind = function(){
         var r = this;
         for( var i = 0,l = arguments.length;i<l;i++){
@@ -21,15 +48,27 @@ Namespace('brook').define(function(ns){
         }
         return r;
     };
+    /**
+     * @name ready
+     * @param {Promise} promise
+     */
     proto.ready = function(n){
         var proc = this.next;
         return function(val){
             return proc(n,val);
         };
     };
+    /**
+     * @name run
+     * @param {Promise} promise
+     */
     proto.run = function(val){
         this.subscribe( undefined , val );
     };
+    /**
+     * @name subscribe
+     * @param {Promise} promise
+     */
     proto.subscribe = function(next,val){
         var next = next ? next : function(){};
         if( !this.errorHandler )
@@ -42,15 +81,33 @@ Namespace('brook').define(function(ns){
             this.onError(e);
         }
     };
+    /**
+     * @name forEach
+     * @param {Promise} promise
+     */
     proto.forEach = proto.subscribe;
+    /**
+     * @name setErrorHandler
+     * @param {Promise} promise
+     */
     proto.setErrorHandler = function(promise){
         this.errorHandler = promise;
     };
+    /**
+     * @name onError
+     */
     proto.onError = function(e){
         (this.errorHandler||new Promise).subscribe(function(){},e);
     };
+    /**#@-*/
     })(Promise.prototype);
-
+    /**
+     * @name promise
+     * @function
+     * @memberOf brook
+     * @param{function} next
+     * ディスクリプション  
+     */
     var promise = function(next){return new Promise(next)};
     ns.provide({
         promise : promise,
@@ -58,19 +115,43 @@ Namespace('brook').define(function(ns){
     });
 });
 
+/**
+@fileOverview brook.util
+@author daichi.hiroki<hirokidaichi@gmail.com>
+*/
+
+
+/**
+@name brook.util
+@namespace details here
+*/
 Namespace('brook.util')
 .use('brook promise')
 .define(function(ns){
+    /**#@+
+     * @methodOf brook.util
+     */
+    /**
+     * @name mapper
+     * @param {Promise} promise
+     */
     var mapper = function(f){
         return ns.promise(function(next,val){
             return next(f(val));
         });
     };
+    /**
+     * @name filter
+     * @param {Promise} promise
+     */
     var filter = function(f){
         return ns.promise(function(next,val){
             if( f(val) ) return next(val);
         });
     };
+    /**
+     * @name takeBy
+     */
     var takeBy = function(by){
         var num = 1;
         var queue = [];
@@ -82,7 +163,9 @@ Namespace('brook.util')
             }
         });
     };
-
+    /**
+     * @name scatter
+     */
     var scatter = function(){
         return ns.promise(function(next,val){
             for( var i = 0, l = val.length;i<l;i++){
@@ -90,6 +173,9 @@ Namespace('brook.util')
             }
         });
     };
+    /**
+     * @name wait
+     */
     var wait = function(msec){
         var msecFunc = ( typeof msec == 'function' )
             ? msec : function(){return msec};
@@ -173,6 +259,7 @@ Namespace('brook.util')
             },msecFunc());
         });
     };
+    /**#@-*/
     ns.provide({
         mapper  : mapper,
         filter  : filter,
@@ -191,6 +278,17 @@ Namespace('brook.util')
 });
 
 
+
+/**
+@fileOverview brook.lamda
+@author daichi.hiroki<hirokidaichi@gmail.com>
+*/
+
+
+/**
+@name brook.lamda
+@namespace details here
+*/
 
 Namespace('brook.lamda')
 .define(function(ns){
@@ -220,6 +318,16 @@ Namespace('brook.lamda')
         lamda : lamda
     });
 });
+/**
+@fileOverview brook.channel
+@author daichi.hiroki<hirokidaichi@gmail.com>
+*/
+
+
+/**
+@name brook.channel
+@namespace details here
+*/
 Namespace('brook.channel')
 .use('brook promise')
 .define(function(ns){
