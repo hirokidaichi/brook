@@ -1,0 +1,62 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">/**
+<span class='line'>  2</span> @fileOverview brook.lambda
+<span class='line'>  3</span> @author daichi.hiroki&lt;hirokidaichi@gmail.com>
+<span class='line'>  4</span> */</span><span class="WHIT">
+<span class='line'>  5</span> 
+<span class='line'>  6</span> 
+<span class='line'>  7</span> </span><span class="COMM">/**
+<span class='line'>  8</span> @name brook.lambda
+<span class='line'>  9</span> @namespace 簡単に小さな関数を作る為のテンプレートを提供します。
+<span class='line'> 10</span> */</span><span class="WHIT">
+<span class='line'> 11</span> 
+<span class='line'> 12</span> </span><span class="NAME">Namespace</span><span class="PUNC">(</span><span class="STRN">'brook.lambda'</span><span class="PUNC">)</span><span class="WHIT">
+<span class='line'> 13</span> </span><span class="PUNC">.</span><span class="NAME">define</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">ns</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 14</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">cache</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 15</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">hasArg</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">expression</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 16</span> </span><span class="WHIT">        </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">expression.indexOf</span><span class="PUNC">(</span><span class="STRN">'->'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">>=</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 17</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 18</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">parseExpression</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">expression</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 19</span> </span><span class="WHIT">        </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">fixed</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">hasArg</span><span class="PUNC">(</span><span class="WHIT"> </span><span class="NAME">expression</span><span class="WHIT"> </span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="NAME">expression</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="STRN">"$->"</span><span class="PUNC">+</span><span class="NAME">expression</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 20</span> </span><span class="WHIT">        </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">splitted</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">fixed.split</span><span class="PUNC">(</span><span class="STRN">"->"</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 21</span> </span><span class="WHIT">        </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">argsExp</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">splitted.shift</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 22</span> </span><span class="WHIT">        </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">bodyExp</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">splitted.join</span><span class="PUNC">(</span><span class="STRN">'->'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 23</span> </span><span class="WHIT">        </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 24</span> </span><span class="WHIT">            </span><span class="NAME">argumentNames</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">argsExp.split</span><span class="PUNC">(</span><span class="STRN">','</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 25</span> </span><span class="WHIT">            </span><span class="NAME">body</span><span class="WHIT">   </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">hasArg</span><span class="PUNC">(</span><span class="NAME">bodyExp</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="NAME">lambda</span><span class="PUNC">(</span><span class="WHIT"> </span><span class="NAME">bodyExp</span><span class="WHIT"> </span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">toString</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">bodyExp</span><span class="WHIT">
+<span class='line'> 26</span> </span><span class="WHIT">        </span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 27</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 28</span> </span><span class="WHIT">    </span><span class="COMM">/**
+<span class='line'> 29</span>      * @name lambda
+<span class='line'> 30</span>      * @function
+<span class='line'> 31</span>      * @memberOf brook.lambda
+<span class='line'> 32</span>      * @param {string} expression
+<span class='line'> 33</span>      * @return {function}
+<span class='line'> 34</span>      * @description
+<span class='line'> 35</span>      * 文字列表現を受け取り、シンプルな関数を生成します。
+<span class='line'> 36</span>      * @example
+<span class='line'> 37</span>      * var f = lambda('$ * $'); // 第一引数を二乗する関数
+<span class='line'> 38</span>      * @example
+<span class='line'> 39</span>      * var f = lambda('x,y-> x + y'); // xとyを受け取って、x+yを返す
+<span class='line'> 40</span>      * @example
+<span class='line'> 41</span>      * var f = lamnda('x->y->z-> x+y+z'); // 部分適用できる関数を作る
+<span class='line'> 42</span>      */</span><span class="WHIT">
+<span class='line'> 43</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">lambda</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">expression</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 44</span> </span><span class="WHIT">        </span><span class="KEYW">if</span><span class="PUNC">(</span><span class="WHIT"> </span><span class="NAME">cache</span><span class="PUNC">[</span><span class="NAME">expression</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">)</span><span class="WHIT">
+<span class='line'> 45</span> </span><span class="WHIT">            </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">cache</span><span class="PUNC">[</span><span class="NAME">expression</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 46</span> </span><span class="WHIT">        </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">parsed</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">parseExpression</span><span class="PUNC">(</span><span class="NAME">expression</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 47</span> </span><span class="WHIT">        </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">func</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">new</span><span class="WHIT"> </span><span class="NAME">Function</span><span class="PUNC">(</span><span class="WHIT"> </span><span class="NAME">parsed.argumentNames</span><span class="PUNC">,</span><span class="STRN">"return ("</span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">parsed.body</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="STRN">");"</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 48</span> </span><span class="WHIT">        </span><span class="NAME">cache</span><span class="PUNC">[</span><span class="NAME">expression</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">func</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 49</span> </span><span class="WHIT">        </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">func</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 50</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 51</span> </span><span class="WHIT">    </span><span class="NAME">ns.provide</span><span class="PUNC">(</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 52</span> </span><span class="WHIT">        </span><span class="NAME">lambda</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">lambda</span><span class="WHIT">
+<span class='line'> 53</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 54</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 55</span> </span></pre></body></html>
