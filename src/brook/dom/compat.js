@@ -1,4 +1,13 @@
+/**
+@fileOverview brook/compat.js
+@author daichi.hiroki<hirokidaichi@gmail.com>
+*/
 
+
+/**
+@name brook.dom.compat
+@namespace details here
+*/
 Namespace('brook.dom.compat')
 .define(function(ns){
     var dataset = (function(){

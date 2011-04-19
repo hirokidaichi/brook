@@ -6,16 +6,26 @@
 
 /**
 @name brook.channel
-@namespace details here
+@namespace promiseをベースとしたobserver patternのシンプルな実装を提供します。
 */
 Namespace('brook.channel')
 .use('brook promise')
 .define(function(ns){
+    /**
+     * @class brook.channel.createChannelで生成されるインスタンスのインナークラス
+     * @name _Channel
+     * @memberOf brook.channel
+     * @description
+     * promiseを登録できるobserverクラス
+     */
     var Channel = function(){
         this.queue = [];
         this.promises = [];
     };
     (function(proto){
+    /**#@+
+     * @methodOf brook.channel._Channel.prototype
+     */
         var through = function(k){return k};
         proto.sendMessage = function(msg){
             this.queue.push(msg);
@@ -26,6 +36,9 @@ Namespace('brook.channel')
                 }
             }
         };
+        /**
+         * @name send
+         */
         proto.send = function(func){
             var func = ( func ) ? func : through;
             var _self = this;
@@ -34,11 +47,15 @@ Namespace('brook.channel')
                 next(val);
             });
         };
+        /**
+         * @name observe
+         */
         proto.observe = function(promise){
             this.promises.push(promise);
         };
+    /**#@-*/
     })(Channel.prototype);
-    
+
     var channel = function(name){
         if( name )
             return getNamedChannel(name);

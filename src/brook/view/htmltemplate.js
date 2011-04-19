@@ -1,4 +1,13 @@
+/**
+@fileOverview brook/view/htmltemplate.js
+@author daichi.hiroki<hirokidaichi@gmail.com>
+*/
 
+
+/**
+@name brook.view.htmltemplate
+@namespace 簡易なHTMLTemplate実装を提供します。
+*/
 Namespace('brook.view.htmltemplate')
 .use('brook.view.htmltemplate.core *')
 .define(function(ns){

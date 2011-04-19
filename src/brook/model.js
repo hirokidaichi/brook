@@ -1,9 +1,26 @@
+/**
+@fileOverview brook/model.js
+@author daichi.hiroki<hirokidaichi@gmail.com>
+*/
+
+
+/**
+@name brook.model
+@namespace mvcにおけるmodelインタフェースを提供します。
+*/
 Namespace('brook.model')
 .use('brook promise')
 .use('brook.util *')
 .use('brook.channel *')
-.use('brook.lamda *')
+.use('brook.lambda *')
 .define(function(ns){
+    /**
+     * @class brook.model.createModelで生成されるインスタンスのインナークラス
+     * @name _Model
+     * @memberOf brook.model
+     * @description
+     * mvcにおけるmodelインタフェースをもったクラス
+     */
     var Model = function(obj){
         this.methods = {};
         this.channels= {};

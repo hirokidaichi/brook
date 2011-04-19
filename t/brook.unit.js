@@ -2,13 +2,13 @@
 Namespace()
 .use('brook *')
 .use('brook.util *')
-.use('brook.lamda *')
+.use('brook.lambda *')
 .use('brook.channel *')
 .use('brook.model *')
 .apply(function(ns){
 
 test('exports',function(){
-    var exports = "promise wait mapper debug cond match filter lamda VERSION".split(/ /g);
+    var exports = "promise wait mapper debug cond match filter lambda VERSION".split(/ /g);
 
     expect( exports.length);
     for( var i = 0,l=exports.length;i<l;i++){
@@ -22,20 +22,20 @@ test('promise',function(){
     var p = ns.promise(function(n,val){
         ok(true,'pass');
         n(val)
-    }).bind(ns.mapper(ns.lamda("$*$")));
+    }).bind(ns.mapper(ns.lambda("$*$")));
     
     p.bind(p).subscribe(function(val){
         ok( val == 10000 ,'val');
     },10);
 });
 
-test('lamda',function(){
+test('lambda',function(){
     expect(4);
     with(ns){
-        equal( lamda('$*$')(2),4);
-        equal( lamda('$*$')(2),4);
-        equal( lamda('x,y->x*y')(2,3),6);
-        equal( lamda('x,y->z->x*y*z')(2,3)(2),12);
+        equal( lambda('$*$')(2),4);
+        equal( lambda('$*$')(2),4);
+        equal( lambda('x,y->x*y')(2,3),6);
+        equal( lambda('x,y->z->x*y*z')(2,3)(2),12);
     }
 });
 
@@ -45,7 +45,7 @@ test('promise defer',function(){
     var p = ns.promise(function(n,val){
         ok(true,'pass');
         n(val);
-    }).bind(ns.mapper(ns.lamda("$*$"))).bind(ns.wait(100));
+    }).bind(ns.mapper(ns.lambda("$*$"))).bind(ns.wait(100));
 
     ns.from(10).bind(p).bind(p).subscribe(function(val){;
         equal( val, 10000 ,'val');
@@ -56,16 +56,16 @@ test('promise defer',function(){
 test('cond',function(){with(ns){
     expect(6);
     var p = promise().bind(
-        cond(lamda('$ == 10'),promise(function(n,v){
+        cond(lambda('$ == 10'),promise(function(n,v){
             ok(true);
             equal( v,10);
             n(v)
         })),
-        cond(lamda('$ % 2 ==0'),promise(function(n,v){
+        cond(lambda('$ % 2 ==0'),promise(function(n,v){
             ok( v%2 == 0);
             n(v)
         })),
-        cond(lamda('$ == 11'),promise(function(n,v){
+        cond(lambda('$ == 11'),promise(function(n,v){
             ok(true);
             equal(v,11);
             n(v)
@@ -100,7 +100,7 @@ test('named channel',function(){
     ns.from(ns.channel('test-channel'))
         .bind(test).subscribe();
     var l = ns.scatter()
-    .bind( ns.mapper( ns.lamda('$*$')))
+    .bind( ns.mapper( ns.lambda('$*$')))
     .bind( ns.takeBy(3) )
     .bind( ns.sendChannel('test-channel'))
 
@@ -120,7 +120,7 @@ test('channel',function(){
     ns.from( channel ).bind( test ).subscribe();
 
     var l = ns.scatter()
-    .bind( ns.mapper( ns.lamda('$*$')))
+    .bind( ns.mapper( ns.lambda('$*$')))
     .bind( ns.takeBy(3) )
     .bind( channel.send())
 
@@ -144,7 +144,7 @@ test('model',function(){
         start();
     });
     var model = ns.createModel();
-    model.addMethod('create',ns.mapper(ns.lamda('$*2')).bind(network));
+    model.addMethod('create',ns.mapper(ns.lambda('$*2')).bind(network));
 
     ns.from( model.method('create') ).bind( view1 ).subscribe();
     ns.from( model.method('create') ).bind( view2 ).subscribe();
@@ -168,7 +168,7 @@ test('lock',function(){
         .bind(function(n,v){ ok(counter%6==0);n(v)})
         .bind(ns.unlock('test'));
 
-    var randWait = ns.scatter().bind( ns.wait( ns.lamda('Math.random()*400')));
+    var randWait = ns.scatter().bind( ns.wait( ns.lambda('Math.random()*400')));
 
     randWait.bind(sync).bind(ns.takeBy(6),function(n,v){
         start();

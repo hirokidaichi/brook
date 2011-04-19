@@ -13,7 +13,7 @@ clean :
 $(CORE) : \
 	./src/brook.js \
 	./src/brook/util.js \
-	./src/brook/lamda.js\
+	./src/brook/lambda.js\
 	./src/brook/channel.js\
 	./src/brook/model.js 
 	cat $^ > $@

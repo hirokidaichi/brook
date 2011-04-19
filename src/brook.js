@@ -6,21 +6,26 @@
 
 /**
 @name brook
-@namespace details here
+@namespace brookライブラリ群のルートとなる名前空間です。promiseの生成処理を持っています。
 */
 Namespace('brook').define(function(ns){
     var VERSION = "0.01";
     /**
-     * @class
-     * @name Promise
+     * @class brook.promiseで生成されるインスタンスのインナークラス
+     * @name _Promise
      * @memberOf brook
+     * @description
+     * 実行する前の次の処理をもつオブジェクトです。
+     * Promiseインスタンスはbind関数で結合する事が出来ます。連続した非同期/同期の処理をデータの流れとして抽象化して結合する事が出来ます。
+     * subscribe/forEach/runなどの処理を実行するまでは、結合した処理は実行される事はありません。
+     * また、コンストラクタは公開されていません。brook.promiseがファクトリとなっています。
      */
     var Promise = function(next){
         this.next = next ||  function(next,val){ return next(val); };
     };
     (function(proto){
     /**#@+
-     * @methodOf brook.Promise.prototype
+     * @methodOf brook._Promise.prototype
      */
 
     /**
@@ -105,8 +110,15 @@ Namespace('brook').define(function(ns){
      * @name promise
      * @function
      * @memberOf brook
-     * @param{function} next
-     * ディスクリプション  
+     * @param {function} next
+     * @return {Promise}
+     * @description
+     * プロミスを生成するファクトリメソッドです。nextは、さらに次の処理を第一引数に受け取り、第二引数に前回の処理の結果を受け取ります。
+     * 引数が無い場合は、データをそのまま次の処理に送るpromiseを生成します。
+     * @example
+     * var p = ns.promise(function(next,value){ next(value+1)});
+     * @example
+     * var p = ns.promise();
      */
     var promise = function(next){return new Promise(next)};
     ns.provide({

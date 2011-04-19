@@ -1,3 +1,13 @@
+/**
+@fileOverview brook/widget.js
+@author daichi.hiroki<hirokidaichi@gmail.com>
+*/
+
+
+/**
+@name brook.widget
+@namespace details here
+*/
 Namespace('brook.widget')
 .use('brook promise')
 .use('brook.channel *')

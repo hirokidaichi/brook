@@ -6,21 +6,26 @@
 
 /**
 @name brook
-@namespace details here
+@namespace brookライブラリ群のルートとなる名前空間です。promiseの生成処理を持っています。
 */
 Namespace('brook').define(function(ns){
     var VERSION = "0.01";
     /**
-     * @class
-     * @name Promise
+     * @class brook.promiseで生成されるインスタンスのインナークラス
+     * @name _Promise
      * @memberOf brook
+     * @description
+     * 実行する前の次の処理をもつオブジェクトです。
+     * Promiseインスタンスはbind関数で結合する事が出来ます。連続した非同期/同期の処理をデータの流れとして抽象化して結合する事が出来ます。
+     * subscribe/forEach/runなどの処理を実行するまでは、結合した処理は実行される事はありません。
+     * また、コンストラクタは公開されていません。brook.promiseがファクトリとなっています。
      */
     var Promise = function(next){
         this.next = next ||  function(next,val){ return next(val); };
     };
     (function(proto){
     /**#@+
-     * @methodOf brook.Promise.prototype
+     * @methodOf brook._Promise.prototype
      */
 
     /**
@@ -105,8 +110,15 @@ Namespace('brook').define(function(ns){
      * @name promise
      * @function
      * @memberOf brook
-     * @param{function} next
-     * ディスクリプション  
+     * @param {function} next
+     * @return {Promise}
+     * @description
+     * プロミスを生成するファクトリメソッドです。nextは、さらに次の処理を第一引数に受け取り、第二引数に前回の処理の結果を受け取ります。
+     * 引数が無い場合は、データをそのまま次の処理に送るpromiseを生成します。
+     * @example
+     * var p = ns.promise(function(next,value){ next(value+1)});
+     * @example
+     * var p = ns.promise();
      */
     var promise = function(next){return new Promise(next)};
     ns.provide({
@@ -280,17 +292,17 @@ Namespace('brook.util')
 
 
 /**
-@fileOverview brook.lamda
+@fileOverview brook.lambda
 @author daichi.hiroki<hirokidaichi@gmail.com>
 */
 
 
 /**
-@name brook.lamda
-@namespace details here
+@name brook.lambda
+@namespace 簡単に小さな関数を作る為のテンプレートを提供します。
 */
 
-Namespace('brook.lamda')
+Namespace('brook.lambda')
 .define(function(ns){
     var cache = {};
     var hasArg = function(expression){
@@ -303,10 +315,25 @@ Namespace('brook.lamda')
         var bodyExp = splitted.join('->');
         return {
             argumentNames : argsExp.split(','),
-            body   : hasArg(bodyExp) ? lamda( bodyExp ).toString() : bodyExp
+            body   : hasArg(bodyExp) ? lambda( bodyExp ).toString() : bodyExp
         };
     };
-    var lamda = function(expression){
+    /**
+     * @name lambda
+     * @function
+     * @memberOf brook.lambda
+     * @param {string} expression
+     * @return {function}
+     * @description
+     * 文字列表現を受け取り、シンプルな関数を生成します。
+     * @example
+     * var f = lambda('$ * $'); // 第一引数を二乗する関数
+     * @example
+     * var f = lambda('x,y-> x + y'); // xとyを受け取って、x+yを返す
+     * @example
+     * var f = lamnda('x->y->z-> x+y+z'); // 部分適用できる関数を作る
+     */
+    var lambda = function(expression){
         if( cache[expression] )
             return cache[expression];
         var parsed = parseExpression(expression);
@@ -315,7 +342,7 @@ Namespace('brook.lamda')
         return func;
     };
     ns.provide({
-        lamda : lamda
+        lambda : lambda
     });
 });
 /**
@@ -326,16 +353,26 @@ Namespace('brook.lamda')
 
 /**
 @name brook.channel
-@namespace details here
+@namespace promiseをベースとしたobserver patternのシンプルな実装を提供します。
 */
 Namespace('brook.channel')
 .use('brook promise')
 .define(function(ns){
+    /**
+     * @class brook.channel.createChannelで生成されるインスタンスのインナークラス
+     * @name _Channel
+     * @memberOf brook.channel
+     * @description
+     * promiseを登録できるobserverクラス
+     */
     var Channel = function(){
         this.queue = [];
         this.promises = [];
     };
     (function(proto){
+    /**#@+
+     * @methodOf brook.channel._Channel.prototype
+     */
         var through = function(k){return k};
         proto.sendMessage = function(msg){
             this.queue.push(msg);
@@ -346,6 +383,9 @@ Namespace('brook.channel')
                 }
             }
         };
+        /**
+         * @name send
+         */
         proto.send = function(func){
             var func = ( func ) ? func : through;
             var _self = this;
@@ -354,11 +394,15 @@ Namespace('brook.channel')
                 next(val);
             });
         };
+        /**
+         * @name observe
+         */
         proto.observe = function(promise){
             this.promises.push(promise);
         };
+    /**#@-*/
     })(Channel.prototype);
-    
+
     var channel = function(name){
         if( name )
             return getNamedChannel(name);
@@ -388,12 +432,29 @@ Namespace('brook.channel')
 });
 
 
+/**
+@fileOverview brook/model.js
+@author daichi.hiroki<hirokidaichi@gmail.com>
+*/
+
+
+/**
+@name brook.model
+@namespace mvcにおけるmodelインタフェースを提供します。
+*/
 Namespace('brook.model')
 .use('brook promise')
 .use('brook.util *')
 .use('brook.channel *')
-.use('brook.lamda *')
+.use('brook.lambda *')
 .define(function(ns){
+    /**
+     * @class brook.model.createModelで生成されるインスタンスのインナークラス
+     * @name _Model
+     * @memberOf brook.model
+     * @description
+     * mvcにおけるmodelインタフェースをもったクラス
+     */
     var Model = function(obj){
         this.methods = {};
         this.channels= {};
