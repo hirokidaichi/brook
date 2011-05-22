@@ -1185,7 +1185,6 @@ Namespace('brook.dom.compat')
         return new ClassList(element);
     };
 
-    ClassList.prototype = new Array;
     (function(proto){
         var check = function(token) {
             if (token == "") {
@@ -1197,33 +1196,24 @@ Namespace('brook.dom.compat')
         };
         this._fake = true;
         this._refresh = function () {
-            var clss = this._element.getAttribute("class");
-            if (!clss) {
-                return this;
-            }
-            var classes = clss.split(/\s+/);
+            var classes = (this._element.className || '').split(/\s+/);
             if (classes.length && classes[0] == "") {
                 classes.shift();
             }
             if (classes.length && classes[classes.length - 1] == "") {
                 classes.pop();
             }
+            this._classList = classes;
             this.length = classes.length;
-            if (this.length == 0) {
-                return this;
-            }
-            for (var i = 0; i < this.length; ++i) {
-                this[i] = classes[i];
-            }
             return this;
         };
         this.item = function (i) {
-            return this[i] || null;
-        }
+            return this._classList[i] || null;
+        };
         this.contains = function (token) {
             check(token);
             for (var i = 0; i < this.length; ++i) {
-                if (this[i] == token) {
+                if (this._classsList[i] == token) {
                     return true;
                 }
             }
@@ -1232,26 +1222,28 @@ Namespace('brook.dom.compat')
         this.add = function (token) {
             check(token);
             for (var i = 0; i < this.length; ++i) {
-                if (this[i] == token) {
+                if (this._classList[i] == token) {
                     return;
                 }
             }
-            this.push(token);
-            this._element.setAttribute("class", this.join(" "));
+            this._classList.push(token);
+            this.length = this._classList.length;
+            this._element.className = this._classList.join(" ");
         }
         this.remove = function (token) {
             check(token);
-            for (var i = 0; i < this.length; ++i) {
-                if (this[i] == token) {
-                    this.splice(i, 1);
-                    this._element.setAttribute("class", this.join(" "));
+            for (var i = 0; i < this._classList.length; ++i) {
+                if (this._classList[i] == token) {
+                    this._classList.splice(i, 1);
+                    this._element.className =  this._classList.join(" ");
                 }
             }
+            this.length = this._classList.length;
         }
         this.toggle = function (token) {
             check(token);
             for (var i = 0; i < this.length; ++i) {
-                if (this[i] == token) {
+                if (this._classList[i] == token) {
                     this.remove(token);
                     return false;
                 }
