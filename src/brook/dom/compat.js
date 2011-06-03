@@ -73,7 +73,7 @@ Namespace('brook.dom.compat')
         this.contains = function (token) {
             check(token);
             for (var i = 0; i < this.length; ++i) {
-                if (this._classsList[i] == token) {
+                if (this._classList[i] == token) {
                     return true;
                 }
             }
