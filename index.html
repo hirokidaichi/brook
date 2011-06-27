@@ -1,105 +1,103 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset='utf-8'>
-
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="lib/google-code-prettify/prettify.css">
+  <link rel="stylesheet" type="text/css" href="css/index.css">
   <title>hirokidaichi/brook @ GitHub</title>
-
-  <style type="text/css">
-    body {
-      margin-top: 1.0em;
-      background-color: #fefeff;
-      font-family: Helvetica, Arial, FreeSans, san-serif;
-      color: #000000;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-    h1 { font-size: 3.8em; color: #004499; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
-    h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: #004499; }
-    h3 { text-align: center; color: #004499; }
-    a { color: #004499; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-  </style>
+  <script type="text/javascript" src="js/namespace.js"></script>
+  <script type="text/javascript" src="js/brook.js"></script>
+  <script type="text/javascript" src="lib/google-code-prettify/prettify.js"></script>
+  <script type="text/javascript">
+    window.onload = function() {
+      var sampleCode = document.getElementById("sampleCode").innerHTML;
+      prettyPrint();
+      eval(sampleCode);
+    };
+  </script>
 </head>
 
 <body>
   <a href="http://github.com/hirokidaichi/brook"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
 
   <div id="container">
-
     <div class="download">
-      <a href="http://github.com/hirokidaichi/brook/zipball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-      <a href="http://github.com/hirokidaichi/brook/tarball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+      <a href="http://github.com/hirokidaichi/brook/zipball/master"><img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
+      <a href="http://github.com/hirokidaichi/brook/tarball/master"><img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
     </div>
 
     <h1><a href="http://github.com/hirokidaichi/brook">brook</a></h1>
     <div class="description">
-      a javascript framework for large scale development
+      a JavaScript framework for large scale development
     </div>
     <p>
-        "brook" is a javascript framework.
+        "brook" is a JavaScript framework.
     </p>
-    <h2>Document</h2>
-    <p><a href="./doc/index.html">document</a></p>
-    <h2>Demo</h2>
-    <p><a href="./sample/index.html">simple demo</a></p>
+
     <h2>Sample Code </h2>
     you can write the application using MVC design pattern easily,<br />
     like this:
-    <pre>
-Namespace('sample.widget')
-.use('brook *')
-.use('brook.util *')
-.use('brook.channel *')
-.use('sample.model getModel')
-.use('sample.view getView')
+    <pre class="default prettyprint" id="sampleCode">
+Namespace("sample.widget")
+.use("brook *")
+.use("brook.model *")
+.use("brook.util *")
 .define(function(ns){
+  var observeEvent = function(element, eventName, promise) {
+    element.addEventListener(eventName, function(event) {
+      promise.run(event)
+    }, false );
+  };
 
-var model = ns.getModel();
-var view  = ns.getView();
-var observeChannel = ns.observeChannel;
-var observeEvent = function(element,eventName,promise){
-    element.addEventListener(eventName,function(evt){promise.run(evt)},false );
-};
-var updateHTML = function(element){
-    return ns.promise(function(n,v){
-        element.innerHTML = v; n();
+  //define view method
+  var updateView = function(element) {
+    return ns.promise(function(next, value) {
+      element.innerHTML += value + "<br>";
+      next();
     });
-};
-ns.provide({
-    registerElement:function(element){
+  };
+  
+  //define model
+  var model = ns.createModel();
+  model.addMethod("update", ns.promise(function(next, value) {
+    //update model
+    //for example, connectToSomeDataBase();
+    //then, Model to View
+    next("Hello World!");
+  }));
 
-        // handle user action and notify to the model
-        // View to Model
-        observeEvent( element, 'click',viaEvent.bind( model.notify('update'));
+  ns.provide({
+    registerElement: function(button, element) {
+      // handle user action and notify to the model
+      // View to Model
+      observeEvent(button, "click", model.notify("update"));
 
-        // observing global channel ,when receiving some messages , notify to the model
-        // View to Model
-        observeChannel( 'shake',viaChannel.bind( model.notify('update') ));
-
-        // observing model updates
-        // Model to View
-        model.observe( 'update',
-            view
-                .bind( updateHTML(element) )
-                .bind( ns.bindAllWidget )
-        );
+      //observing model update
+      ns.from(model.method("update")).bind(updateView(element)).subscribe();
     }
+  });
 });
 
+//entry point
+Namespace.use("sample.widget").apply(function(ns) {
+  ns.sample.widget.registerElement(
+    document.getElementById("sampleButton"),
+    document.getElementById("output")
+  );
 });
+</pre>
 
-    </pre>
+<div><button type="button" id="sampleButton">run sample code</button></div>
+<pre id="output"></pre>
+
+    <h2>Document</h2>
+    <p><a href="./doc/index.html">document</a></p>
+
+    <!--
+    <h2>Demo</h2>
+    <p><a href="./sample/index.html">simple demo</a></p>
+    -->
+
     <h2>Authors</h2>
     <p>Daichi Hiroki (hirokidaichi@gmail.com)<br/>Kato Kazuyoshi (kato.kazuyoshi@gmail.com)<br/><br/>      </p>
     <h2>Contact</h2>
@@ -115,7 +113,7 @@ ns.provide({
     </p>
     <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
       by running:
-      <pre>$ git clone git://github.com/hirokidaichi/brook</pre>
+      <pre class="default git">$ git clone git://github.com/hirokidaichi/brook</pre>
     </p>
 
     <div class="footer">
@@ -123,7 +121,5 @@ ns.provide({
     </div>
 
   </div>
-
-  
 </body>
 </html>
