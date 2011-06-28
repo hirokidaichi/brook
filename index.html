@@ -12,6 +12,8 @@
     window.onload = function() {
       var sampleCode = document.getElementById("sampleCode").innerHTML;
       prettyPrint();
+      sampleCode = sampleCode.replace(/&lt;/g, "<");
+      sampleCode = sampleCode.replace(/&gt;/g, ">;");
       eval(sampleCode);
     };
   </script>
