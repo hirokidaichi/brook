@@ -13,7 +13,7 @@
       var sampleCode = document.getElementById("sampleCode").innerHTML;
       prettyPrint();
       sampleCode = sampleCode.replace(/&lt;/g, "<");
-      sampleCode = sampleCode.replace(/&gt;/g, ">;");
+      sampleCode = sampleCode.replace(/&gt;/g, ">");
       eval(sampleCode);
     };
   </script>
@@ -51,7 +51,7 @@ Namespace("sample.widget")
   //define view method
   var updateView = function(element) {
     return ns.promise(function(next, value) {
-      element.innerHTML += value + "<br>";
+      element.innerHTML += value + "&lt;br&gt;";
       next();
     });
   };
