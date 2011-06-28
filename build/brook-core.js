@@ -261,7 +261,8 @@ Namespace('brook.util')
             next(value);
         });
     };
-    var emitInterval = function(msec){
+    var EMIT_INTERVAL_MAP = {};
+    var emitInterval = function(msec, name){
         var msecFunc = ( typeof msec == 'function' )
             ? msec : function(){return msec};
 
@@ -269,6 +270,15 @@ Namespace('brook.util')
             var id = setInterval(function(){
                 next(val);
             },msecFunc());
+            if (name) {
+                EMIT_INTERVAL_MAP[name] = id;
+            }
+        });
+    };
+    var stopEmitInterval = function(name) {
+        return ns.promise(function(next, value) {
+            clearInterval(EMIT_INTERVAL_MAP[name]);
+            next(value);
         });
     };
     /**#@-*/
@@ -285,7 +295,8 @@ Namespace('brook.util')
         unlock  : unlock,
         from    : from,
         waitUntil : waitUntil,
-        emitInterval: emitInterval
+        emitInterval: emitInterval,
+        stopEmitInterval: stopEmitInterval
     });
 });
 
