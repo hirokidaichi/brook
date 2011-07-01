@@ -342,7 +342,7 @@ Namespace('brook.lambda')
      * @example
      * var f = lambda('x,y-> x + y'); // xとyを受け取って、x+yを返す
      * @example
-     * var f = lamnda('x->y->z-> x+y+z'); // 部分適用できる関数を作る
+     * var f = lambda('x->y->z-> x+y+z'); // 部分適用できる関数を作る
      */
     var lambda = function(expression){
         if( cache[expression] )
@@ -491,8 +491,8 @@ Namespace('brook.model')
             throw('do not observe undefined method');
         return this.channels[method];
     };
-    var createModel = function(){
-        return new Model;
+    var createModel = function(obj){
+        return new Model(obj);
     };
     ns.provide({
         createModel : createModel
