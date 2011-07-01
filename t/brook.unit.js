@@ -129,7 +129,7 @@ test('channel',function(){
 
 
 test('model',function(){
-    expect(4);
+    expect(6);
     stop();
     var network = ns.wait(100).bind(function(n,v){
         n({ result : 'helloworld' ,args : v});
@@ -143,12 +143,17 @@ test('model',function(){
         equal( v.args   , 20 );
         start();
     });
-    var model = ns.createModel();
-    model.addMethod('create',ns.mapper(ns.lambda('$*2')).bind(network));
+    var model = ns.createModel({
+	create: ns.mapper(ns.lambda('$*2')).bind(network)
+    });
+    model.addMethod('read', network);
+
+    ns.from( model.method('read') ).bind( view1 ).subscribe();
+    model.notify('read').run(20);
 
     ns.from( model.method('create') ).bind( view1 ).subscribe();
     ns.from( model.method('create') ).bind( view2 ).subscribe();
-    ns.promise().bind(model.notify('create')).run(10);
+    model.notify('create').run(10);
 });
 
 

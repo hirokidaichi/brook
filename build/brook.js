@@ -491,8 +491,8 @@ Namespace('brook.model')
             throw('do not observe undefined method');
         return this.channels[method];
     };
-    var createModel = function(){
-        return new Model;
+    var createModel = function(obj){
+        return new Model(obj);
     };
     ns.provide({
         createModel : createModel
