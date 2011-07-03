@@ -24,6 +24,19 @@ Namespace('brook.util')
         });
     };
     /**
+     * @methodOf brook.util
+     */
+    /**
+     * @name hook
+     * @param {Promise} promise
+     */
+    var hook = function(f){
+        return ns.promise(function(next,val){
+            f(val);
+            return next(val);
+        });
+    };
+    /**
      * @name filter
      * @param {Promise} promise
      */
@@ -79,9 +92,8 @@ Namespace('brook.util')
     };
     var debug = function(sig){
         var sig = sig ? sig : "debug";
-        return ns.promise(function(next,val){
+        return hook(function(val) {
             console.log(sig + ":",val);
-            return next( val );
         });
     };
     var cond = function(f,promise){
@@ -155,6 +167,7 @@ Namespace('brook.util')
     /**#@-*/
     ns.provide({
         mapper  : mapper,
+        hook    : hook,
         filter  : filter,
         scatter : scatter,
         takeBy  : takeBy,
