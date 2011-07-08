@@ -29,10 +29,10 @@ test('promise',function(){
     },10);
 });
 
-test('hook',function(){
+test('through',function(){
     expect(1);
     var p = ns.mapper(ns.lambda('$*2'));
-    ns.hook(function(val) {
+    ns.through(function(val) {
         return val * 3;
     }).bind(p).subscribe(function(val) {
         equals( val,20 ,'val');

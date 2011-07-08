@@ -27,10 +27,10 @@ Namespace('brook.util')
      * @methodOf brook.util
      */
     /**
-     * @name hook
+     * @name through
      * @param {Promise} promise
      */
-    var hook = function(f){
+    var through = function(f){
         return ns.promise(function(next,val){
             f(val);
             return next(val);
@@ -167,7 +167,7 @@ Namespace('brook.util')
     /**#@-*/
     ns.provide({
         mapper  : mapper,
-        hook    : hook,
+        through : through,
         filter  : filter,
         scatter : scatter,
         takeBy  : takeBy,
