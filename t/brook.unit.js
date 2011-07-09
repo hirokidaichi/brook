@@ -30,13 +30,29 @@ test('promise',function(){
 });
 
 test('through',function(){
-    expect(1);
+    expect(2);
     var p = ns.mapper(ns.lambda('$*2'));
     ns.through(function(val) {
+        equals(val, 10);
         return val * 3;
     }).bind(p).subscribe(function(val) {
         equals( val,20 ,'val');
     }, 10);
+});
+
+test('debug',function(){
+    expect(3);
+    var previousConsole = console;
+    console = {
+        log: function(msg, val) { 
+            equals(msg, 'debug:', 'sigil'); 
+            equals(val, 20, 'val'); 
+        }
+    };
+    ns.debug().subscribe(function(val) {
+        equals(val,20,'val');
+    }, 20);
+    console = previousConsole;
 });
 
 test('lambda',function(){

@@ -221,7 +221,7 @@ Namespace('brook.util')
     };
     var debug = function(sig){
         var sig = sig ? sig : "debug";
-        return hook(function(val) {
+        return through(function(val) {
             console.log(sig + ":",val);
         });
     };
