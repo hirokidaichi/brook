@@ -1,5 +1,7 @@
 
-Namespace('test').use('brook.dom.compat *').define(function(ns){
+Namespace('test')
+.use('brook.dom.compat classList,dataset')
+.define(function(ns){
     var counter = 0;
     var isValidElement=  function(element,namespace){
         test('test'+counter++,function(){
@@ -15,13 +17,8 @@ Namespace('test').use('brook.dom.compat *').define(function(ns){
 
 Namespace('widget.test01')
 .use('test *')
-.use('brook.util *')
 .use('brook.widget *')
-.use('brook.channel *')
-.use('brook.dom.compat *')
 .define(function(ns){
-    var classList = ns.classList;
-    var dataset   = ns.dataset;
     ns.provide({
         registerElement : function(element){
             ns.isValidElement(element,'widget.test01');
@@ -32,10 +29,7 @@ Namespace('widget.test01')
 });
 Namespace('widget.test02')
 .use('test *')
-.use('brook.dom.compat *')
 .define(function(ns){
-    var classList = ns.classList;
-    var dataset   = ns.dataset;
     ns.provide({
         registerElements : function(elements){
             for (var i=0,l= elements.length;i<l;i++){
@@ -46,14 +40,10 @@ Namespace('widget.test02')
 });
 Namespace('widget.test03')
 .use('test *')
-.use('brook.dom.compat *')
 .define(function(ns){
-    var classList = ns.classList;
-    var dataset   = ns.dataset;
-    var i = 0;
     ns.provide({
-        registerElement:function(element){
-            ns.isValidElement(element,'widget.test03')
+        registerElement:function(element, dataset){
+            ns.isValidElement(element,dataset.widgetNamespace);
         }
     });
 });

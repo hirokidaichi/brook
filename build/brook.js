@@ -153,6 +153,19 @@ Namespace('brook.util')
         });
     };
     /**
+     * @methodOf brook.util
+     */
+    /**
+     * @name through
+     * @param {Promise} promise
+     */
+    var through = function(f){
+        return ns.promise(function(next,val){
+            f(val);
+            return next(val);
+        });
+    };
+    /**
      * @name filter
      * @param {Promise} promise
      */
@@ -208,9 +221,8 @@ Namespace('brook.util')
     };
     var debug = function(sig){
         var sig = sig ? sig : "debug";
-        return ns.promise(function(next,val){
+        return through(function(val) {
             console.log(sig + ":",val);
-            return next( val );
         });
     };
     var cond = function(f,promise){
@@ -284,6 +296,7 @@ Namespace('brook.util')
     /**#@-*/
     ns.provide({
         mapper  : mapper,
+        through : through,
         filter  : filter,
         scatter : scatter,
         takeBy  : takeBy,
@@ -1329,10 +1342,10 @@ Namespace('brook.widget')
         for( var i = 0,l = widgetElements.length;i<l;i++){
             var widget = widgetElements[i];
             removeClassName((targetClassName||TARGET_CLASS_NAME),widget);
-            var dataset = ns.dataset(widget);
-            if( !dataset.widgetNamespace ) continue;
-            if( !map[dataset.widgetNamespace] ) map[dataset.widgetNamespace] = [];
-            map[dataset.widgetNamespace].push( widget );
+            var widgetNamespace = dataset(widget).widgetNamespace;
+            if( !widgetNamespace ) continue;
+            if( !map[widgetNamespace] ) map[widgetNamespace] = [];
+            map[widgetNamespace].push( widget );
         }
         n(map);
     });
@@ -1343,7 +1356,7 @@ Namespace('brook.widget')
             Namespace.use([namespace , '*'].join(' ')).apply(function(_ns){
                 if (_ns.registerElement) {
                     for( var i = 0,l=targets.length;i<l;i++){
-                        _ns.registerElement(targets[i]);
+                        _ns.registerElement(targets[i], dataset(targets[i]));
                     }
                 } else if (_ns.registerElements) {
                     _ns.registerElements( targets );

@@ -25,8 +25,34 @@ test('promise',function(){
     }).bind(ns.mapper(ns.lambda("$*$")));
     
     p.bind(p).subscribe(function(val){
-        ok( val == 10000 ,'val');
+        equals( val,10000 ,'val');
     },10);
+});
+
+test('through',function(){
+    expect(2);
+    var p = ns.mapper(ns.lambda('$*2'));
+    ns.through(function(val) {
+        equals(val, 10);
+        return val * 3;
+    }).bind(p).subscribe(function(val) {
+        equals( val,20 ,'val');
+    }, 10);
+});
+
+test('debug',function(){
+    expect(3);
+    var previousConsole = console;
+    console = {
+        log: function(msg, val) { 
+            equals(msg, 'debug:', 'sigil'); 
+            equals(val, 20, 'val'); 
+        }
+    };
+    ns.debug().subscribe(function(val) {
+        equals(val,20,'val');
+    }, 20);
+    console = previousConsole;
 });
 
 test('lambda',function(){
