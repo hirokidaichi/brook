@@ -53,24 +53,51 @@ Namespace('brook.channel')
         proto.observe = function(promise){
             this.promises.push(promise);
         };
+
+        proto.observeOnce = function(promise){
+            //do not register same promise twice
+            for (var i = 0; i < this.promises.length; i++) {
+                if (this.promises[i] === promise) {
+                    return;
+                }
+            }
+            this.promises.push(promise);
+        };
+
+        proto.stopObserve = function(promise){
+            for (var i = 0; i < this.promises.length; i++) {
+                if (this.promises[i] === promise) {
+                    this.promises.splice(i, 1);
+                    i--;
+                }
+            }
+        };
     /**#@-*/
     })(Channel.prototype);
 
     var channel = function(name){
-        if( name )
+        if( name ) {
             return getNamedChannel(name);
-        return new Channel;
+        }
+        return new Channel();
     };
 
     var NAMED_CHANNEL = {};
     var getNamedChannel = function(name){
-        if( NAMED_CHANNEL[name] )
+        if( NAMED_CHANNEL[name] ) {
             return NAMED_CHANNEL[name];
-        NAMED_CHANNEL[name] = new Channel;
+        }
+        NAMED_CHANNEL[name] = new Channel();
         return NAMED_CHANNEL[name];
     };
     var observeChannel = function(name,promise){
         getNamedChannel( name ).observe( promise );
+    };
+    var observeChannelOnce = function(name,promise){
+        getNamedChannel( name ).observeOnce( promise );
+    };
+    var stopObserveChannel = function(name,promise){
+        getNamedChannel( name ).stopObserve( promise );
     };
     var sendChannel = function(name,func){
         var channel = getNamedChannel( name );
@@ -80,7 +107,9 @@ Namespace('brook.channel')
         channel        : channel,
         sendChannel    : sendChannel,
         observeChannel : observeChannel,
-        createChannel  : function(){ return new Channel;}
+        observeChannelOnce : observeChannelOnce,
+        stopObserveChannel : stopObserveChannel,
+        createChannel  : function(){ return new Channel();}
     });
 });
 

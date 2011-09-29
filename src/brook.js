@@ -34,7 +34,6 @@ Namespace('brook').define(function(ns){
      */
     proto.concat = function(promise){
         var _before = this;
-        var after  = promise;
         var next   = function(n,val){
             return _before.subscribe( promise.ready(n),val);
         };

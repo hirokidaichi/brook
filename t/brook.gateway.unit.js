@@ -87,19 +87,15 @@ test('match',function(){with(ns){
 }});
 
 test('named channel',function(){
-    expect(12);
-    ns.observeChannel('test-channel',
-        ns.promise(function(n,v){
-            ok(n);
-            equals( v.length , 3);
-        }).bind(ns.debug())
-    );
-    ns.observeChannel('test-channel',
-        ns.promise(function(n,v){
-            ok(v);
-            equals( v.length , 3);
-        }).bind(ns.debug())
-    );
+    expect(14);
+    var promise = ns.promise(function(n,v){
+        console.log(v);
+        ok(n);
+        equals( v.length , 3);
+    }).bind(ns.debug());
+
+    ns.observeChannel('test-channel', promise);
+    ns.observeChannel('test-channel', promise);
 
     var l = ns.scatter()
     .bind( ns.mapper( ns.lambda('$*$')))
@@ -108,24 +104,23 @@ test('named channel',function(){
 
     l.run([1,2,3,4,5,6,7,8,9]);
 
+    ns.stopObserveChannel('test-channel', promise);
+
+    ns.observeChannelOnce('test-channel', promise);
+    ns.observeChannelOnce('test-channel', promise);
+    ns.sendChannel('test-channel').run([1, 2, 3]);
 });
 
 test('channel',function(){
-    expect(12);
+    expect(14);
     var channel = ns.createChannel();
+    var promise = ns.promise(function(n,v){
+        ok(n);
+        equals( v.length , 3);
+    }).bind(ns.debug())
 
-    channel.observe( 
-        ns.promise(function(n,v){
-            ok(n);
-            equals( v.length , 3);
-        }).bind(ns.debug())
-    );
-    channel.observe(
-        ns.promise(function(n,v){
-            ok(v);
-            equals( v.length , 3);
-        }).bind(ns.debug())
-    );
+    channel.observe(promise);
+    channel.observe(promise);
 
     var l = ns.scatter()
     .bind( ns.mapper( ns.lambda('$*$')))
@@ -133,6 +128,13 @@ test('channel',function(){
     .bind( channel.send())
 
     l.run([1,2,3,4,5,6,7,8,9]);
+
+    channel.stopObserve(promise);
+    channel.send().run('hello');
+
+    channel.observeOnce(promise);
+    channel.observeOnce(promise);
+    channel.send().run([1, 2, 3]);
 });
 
 
@@ -157,13 +159,11 @@ test('model',function(){
             network
         )
     );
-    model.observe('create',view1);
-    model.observe('create',view2);
+    model.method('create').observe(view1);
+    model.method('create').observe(view2);
 
     ns.promise().bind(model.notify('create')).run(10);
 });
-
-
 
 test('lock',function(){
     stop();
@@ -191,6 +191,5 @@ test('lock',function(){
 
 
 });
-
 
 

@@ -24,9 +24,6 @@ Namespace('brook.util')
         });
     };
     /**
-     * @methodOf brook.util
-     */
-    /**
      * @name through
      * @param {Promise} promise
      */
