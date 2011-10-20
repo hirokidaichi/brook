@@ -418,10 +418,6 @@ Namespace('brook.channel')
          * @name observe
          */
         proto.observe = function(promise){
-            this.promises.push(promise);
-        };
-
-        proto.observeOnce = function(promise){
             //do not register same promise twice
             for (var i = 0; i < this.promises.length; i++) {
                 if (this.promises[i] === promise) {
@@ -431,7 +427,7 @@ Namespace('brook.channel')
             this.promises.push(promise);
         };
 
-        proto.stopObserve = function(promise){
+        proto.stopObserving = function(promise){
             for (var i = 0; i < this.promises.length; i++) {
                 if (this.promises[i] === promise) {
                     this.promises.splice(i, 1);
@@ -460,11 +456,8 @@ Namespace('brook.channel')
     var observeChannel = function(name,promise){
         getNamedChannel( name ).observe( promise );
     };
-    var observeChannelOnce = function(name,promise){
-        getNamedChannel( name ).observeOnce( promise );
-    };
-    var stopObserveChannel = function(name,promise){
-        getNamedChannel( name ).stopObserve( promise );
+    var stopObservingChannel = function(name,promise){
+        getNamedChannel( name ).stopObserving( promise );
     };
     var sendChannel = function(name,func){
         var channel = getNamedChannel( name );
@@ -474,8 +467,7 @@ Namespace('brook.channel')
         channel        : channel,
         sendChannel    : sendChannel,
         observeChannel : observeChannel,
-        observeChannelOnce : observeChannelOnce,
-        stopObserveChannel : stopObserveChannel,
+        stopObservingChannel : stopObservingChannel,
         createChannel  : function(){ return new Channel();}
     });
 });

@@ -87,15 +87,19 @@ test('match',function(){with(ns){
 }});
 
 test('named channel',function(){
-    expect(14);
-    var promise = ns.promise(function(n,v){
-        console.log(v);
-        ok(n);
-        equals( v.length , 3);
-    }).bind(ns.debug());
-
-    ns.observeChannel('test-channel', promise);
-    ns.observeChannel('test-channel', promise);
+    expect(13);
+    ns.observeChannel('test-channel',
+        ns.promise(function(n,v){
+            ok(n);
+            equals( v.length , 3);
+        }).bind(ns.debug())
+    );
+    ns.observeChannel('test-channel',
+        ns.promise(function(n,v){
+            ok(v);
+            equals( v.length , 3);
+        }).bind(ns.debug())
+    );
 
     var l = ns.scatter()
     .bind( ns.mapper( ns.lambda('$*$')))
@@ -104,23 +108,35 @@ test('named channel',function(){
 
     l.run([1,2,3,4,5,6,7,8,9]);
 
-    ns.stopObserveChannel('test-channel', promise);
+    var promise = ns.promise(function(n, v) {
+        equals(v, 'ok');
+    });
 
-    ns.observeChannelOnce('test-channel', promise);
-    ns.observeChannelOnce('test-channel', promise);
-    ns.sendChannel('test-channel').run([1, 2, 3]);
+    ns.observeChannel('test-channel-2', promise);
+    ns.observeChannel('test-channel-2', promise);
+    ns.observeChannel('test-channel-2', promise);
+    ns.sendChannel('test-channel-2').run('ok');
+
+    ns.stopObservingChannel('test-channel-2', promise);
+    ns.sendChannel('test-channel-2').run('ok');//not run
 });
 
 test('channel',function(){
-    expect(14);
+    expect(13);
     var channel = ns.createChannel();
-    var promise = ns.promise(function(n,v){
-        ok(n);
-        equals( v.length , 3);
-    }).bind(ns.debug())
 
-    channel.observe(promise);
-    channel.observe(promise);
+    channel.observe( 
+        ns.promise(function(n,v){
+            ok(n);
+            equals( v.length , 3);
+        }).bind(ns.debug())
+    );
+    channel.observe(
+        ns.promise(function(n,v){
+            ok(v);
+            equals( v.length , 3);
+        }).bind(ns.debug())
+    );
 
     var l = ns.scatter()
     .bind( ns.mapper( ns.lambda('$*$')))
@@ -129,14 +145,17 @@ test('channel',function(){
 
     l.run([1,2,3,4,5,6,7,8,9]);
 
-    channel.stopObserve(promise);
-    channel.send().run('hello');
+    var promise = ns.promise(function(n, v) {
+        equals(v, 'ok');
+    });
 
-    channel.observeOnce(promise);
-    channel.observeOnce(promise);
-    channel.send().run([1, 2, 3]);
+    var channel = ns.createChannel();
+    channel.observe(promise);
+    channel.send().run('ok');
+
+    channel.stopObserving(promise);
+    channel.send().run('ok');//not run
 });
-
 
 test('model',function(){
     expect(4);
