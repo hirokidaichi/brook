@@ -398,15 +398,6 @@ Namespace('brook.channel')
      * @methodOf brook.channel._Channel.prototype
      */
         var through = function(k){return k};
-        proto.sendMessage = function(msg){
-            this.queue.push(msg);
-            while( this.queue.length ){
-                var v = this.queue.shift();
-                for( var i = 0,l= this.promises.length;i<l;i++){
-                    this.promises[i].run(v);
-                }
-            }
-        };
         /**
          * @name send
          */
@@ -417,6 +408,18 @@ Namespace('brook.channel')
                 _self.sendMessage(func(val));
                 next(val);
             });
+        };
+        /**
+         * @name sendMessage
+         */
+        proto.sendMessage = function(msg){
+            this.queue.push(msg);
+            while( this.queue.length ){
+                var v = this.queue.shift();
+                for( var i = 0,l= this.promises.length;i<l;i++){
+                    this.promises[i].run(v);
+                }
+            }
         };
         /**
          * @name observe
