@@ -5,13 +5,32 @@ Namespace('test')
     var counter = 0;
     var isValidElement=  function(element,namespace){
         test('test'+counter++,function(){
-            ok(element);
-            ok(! ns.classList(element).contains('widget') );
+            ok(element, 'element exists');
+            ok(! ns.classList(element).contains('widget'),'element contains class-name "widget"');
             equal( ns.dataset(element).widgetNamespace , namespace );
-        })
+        });
     }
     ns.provide({
         isValidElement : isValidElement 
+    });
+});
+
+Namespace('widget.testerror')
+.use('brook *')
+.use('test *')
+.use('brook.channel *')
+.define(function(ns){
+    var errorHandler = ns.promise(function(n,v) {
+        test('testerror',function(){
+            equal(v, 'registerElement error');
+        });
+    });
+    ns.observeChannel('error', errorHandler);
+    ns.provide({
+        registerElement:function(element, dataset){
+            ns.isValidElement(element,'widget.testerror');
+            throw('registerElement error');
+        }
     });
 });
 

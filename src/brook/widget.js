@@ -50,10 +50,15 @@ Namespace('brook.widget')
                 pairs.push([namespace, map[namespace]]);
         n(pairs);
     });
-    var registerElements = ns.promise(function(n, pair) {
-        var namespace = pair[0];
-        var widgets   = pair[1];
-        Namespace.use([namespace , '*'].join(' ')).apply(function(_ns){
+    var applyNamespace = ns.promise(function(n, pair) {
+        Namespace.use([pair[0] , '*'].join(' ')).apply(function(ns){
+            n([ns, pair[1]]);
+        });
+    });
+    var registerElements = ns.promise(function(n, v) {
+        var _ns       = v[0];
+        var widgets   = v[1];
+        try {
             if (_ns.registerElement) {
                 for( var i = 0,l=widgets.length;i<l;i++){
                     _ns.registerElement.apply(null, widgets[i]);
@@ -65,11 +70,13 @@ Namespace('brook.widget')
                 }
                 _ns.registerElements(elements);
             } else {
-                throw('registerElement or registerElements not defined in ' + namespace);
+                throw('registerElement or registerElements not defined in ' + _ns.CURRENT_NAMESPACE);
             }
-        });
+        }
+        catch (e) {
+            errorChannel.sendMessage(e);
+        }
     });
-    registerElements.setErrorHandler(errorChannel.send());
 
     var updater = ns.promise()
         .bind( 
@@ -79,6 +86,7 @@ Namespace('brook.widget')
             mapToPairs,
             ns.unlock('class-seek'),
             ns.scatter(),
+            applyNamespace,
             registerElements
         );
 
