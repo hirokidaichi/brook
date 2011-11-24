@@ -32,11 +32,10 @@ Namespace('brook').define(function(ns){
      * @name concat
      * @param {Promise} promise
      */
-    proto.concat = function(promise){
+    proto.concat = function(after){
         var _before = this;
-        var after  = promise;
-        var next   = function(n,val){
-            return _before.subscribe( promise.ready(n),val);
+        var next    = function(n,val){
+            return _before.subscribe( after.ready(n),val);
         };
         return new Promise(next);
     };
