@@ -32,10 +32,10 @@ Namespace('brook').define(function(ns){
      * @name concat
      * @param {Promise} promise
      */
-    proto.concat = function(promise){
+    proto.concat = function(after){
         var _before = this;
-        var next   = function(n,val){
-            return _before.subscribe( promise.ready(n),val);
+        var next    = function(n,val){
+            return _before.subscribe( after.ready(n),val);
         };
         return new Promise(next);
     };
@@ -394,15 +394,6 @@ Namespace('brook.channel')
      * @methodOf brook.channel._Channel.prototype
      */
         var through = function(k){return k};
-        proto.sendMessage = function(msg){
-            this.queue.push(msg);
-            while( this.queue.length ){
-                var v = this.queue.shift();
-                for( var i = 0,l= this.promises.length;i<l;i++){
-                    this.promises[i].run(v);
-                }
-            }
-        };
         /**
          * @name send
          */
@@ -413,6 +404,18 @@ Namespace('brook.channel')
                 _self.sendMessage(func(val));
                 next(val);
             });
+        };
+        /**
+         * @name sendMessage
+         */
+        proto.sendMessage = function(msg){
+            this.queue.push(msg);
+            while( this.queue.length ){
+                var v = this.queue.shift();
+                for( var i = 0,l= this.promises.length;i<l;i++){
+                    this.promises[i].run(v);
+                }
+            }
         };
         /**
          * @name observe
@@ -1343,7 +1346,8 @@ Namespace('brook.widget')
 
     var classList = ns.classList;
     var dataset   = ns.dataset;
-    var channel   = ns.channel;
+    var widgetChannel = ns.channel('widget');
+    var errorChannel  = ns.channel('error');
 
     var removeClassName = function(className,element){
         classList(element).remove(className);
@@ -1359,43 +1363,65 @@ Namespace('brook.widget')
         for( var i = 0,l = widgetElements.length;i<l;i++){
             var widget = widgetElements[i];
             removeClassName((targetClassName||TARGET_CLASS_NAME),widget);
-            var widgetNamespace = dataset(widget).widgetNamespace;
+            var data            = dataset(widget);
+            var widgetNamespace = data.widgetNamespace;
             if( !widgetNamespace ) continue;
             if( !map[widgetNamespace] ) map[widgetNamespace] = [];
-            map[widgetNamespace].push( widget );
+            map[widgetNamespace].push( [widget, data] );
         }
         n(map);
     });
-    var registerElements = ns.promise(function(n,map){
-        for( var namespace in map ){
-            if( !map.hasOwnProperty( namespace ) ) continue;
-            var targets = map[namespace];
-            Namespace.use([namespace , '*'].join(' ')).apply(function(_ns){
-                if (_ns.registerElement) {
-                    for( var i = 0,l=targets.length;i<l;i++){
-                        _ns.registerElement(targets[i], dataset(targets[i]));
-                    }
-                } else if (_ns.registerElements) {
-                    _ns.registerElements( targets );
-                } else {
-                    throw('registerElement or registerElements not defined in ' + namespace);
+    var mapToPairs = ns.promise(function(n,map){
+        var pairs = [];
+        for( var namespace in map )
+            if( map.hasOwnProperty( namespace ) )
+                pairs.push([namespace, map[namespace]]);
+        n(pairs);
+    });
+    var applyNamespace = ns.promise(function(n, pair) {
+        Namespace.use([pair[0] , '*'].join(' ')).apply(function(ns){
+            n([ns, pair[1]]);
+        });
+    });
+    var registerElements = ns.promise(function(n, v) {
+        var _ns       = v[0];
+        var widgets   = v[1];
+        try {
+            if (_ns.registerElement) {
+                for( var i = 0,l=widgets.length;i<l;i++){
+                    _ns.registerElement.apply(null, widgets[i]);
                 }
-            });
+            } else if (_ns.registerElements) {
+                var elements = [];
+                for( var i = 0,l=widgets.length;i<l;i++){
+                    elements.push(widgets[i][0]);
+                }
+                _ns.registerElements(elements);
+            } else {
+                throw('registerElement or registerElements not defined in ' + _ns.CURRENT_NAMESPACE);
+            }
+        }
+        catch (e) {
+            errorChannel.sendMessage(e);
         }
     });
 
-    var bindAllWidget = ns.sendChannel('widget');
+    var updater = ns.promise()
+        .bind( 
+            ns.lock('class-seek'),
+            elementsByClassName,
+            mapByNamespace,
+            mapToPairs,
+            ns.unlock('class-seek'),
+            ns.scatter(),
+            applyNamespace,
+            registerElements
+        );
 
-    var updater  = ns.from( channel('widget') )
-        .bind( ns.lock('class-seek') )
-        .bind( elementsByClassName )
-        .bind( mapByNamespace )
-        .bind( ns.unlock('class-seek') )
-        .bind( registerElements );
-  
-    updater.subscribe();
+    widgetChannel.observe(updater);
+
     ns.provide({
-        bindAllWidget : bindAllWidget
+        bindAllWidget : widgetChannel.send()
     });
 });
 
