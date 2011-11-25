@@ -87,7 +87,7 @@ test('match',function(){with(ns){
 }});
 
 test('named channel',function(){
-    expect(12);
+    expect(13);
     ns.observeChannel('test-channel',
         ns.promise(function(n,v){
             ok(n);
@@ -108,10 +108,21 @@ test('named channel',function(){
 
     l.run([1,2,3,4,5,6,7,8,9]);
 
+    var promise = ns.promise(function(n, v) {
+        equals(v, 'ok');
+    });
+
+    ns.observeChannel('test-channel-2', promise);
+    ns.observeChannel('test-channel-2', promise);
+    ns.observeChannel('test-channel-2', promise);
+    ns.sendChannel('test-channel-2').run('ok');
+
+    ns.stopObservingChannel('test-channel-2', promise);
+    ns.sendChannel('test-channel-2').run('ok');//not run
 });
 
 test('channel',function(){
-    expect(12);
+    expect(13);
     var channel = ns.createChannel();
 
     channel.observe( 
@@ -133,8 +144,18 @@ test('channel',function(){
     .bind( channel.send())
 
     l.run([1,2,3,4,5,6,7,8,9]);
-});
 
+    var promise = ns.promise(function(n, v) {
+        equals(v, 'ok');
+    });
+
+    var channel = ns.createChannel();
+    channel.observe(promise);
+    channel.send().run('ok');
+
+    channel.stopObserving(promise);
+    channel.send().run('ok');//not run
+});
 
 test('model',function(){
     expect(4);
@@ -157,13 +178,11 @@ test('model',function(){
             network
         )
     );
-    model.observe('create',view1);
-    model.observe('create',view2);
+    model.method('create').observe(view1);
+    model.method('create').observe(view2);
 
     ns.promise().bind(model.notify('create')).run(10);
 });
-
-
 
 test('lock',function(){
     stop();
@@ -191,6 +210,5 @@ test('lock',function(){
 
 
 });
-
 
 
