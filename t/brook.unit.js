@@ -208,14 +208,6 @@ test('lock',function(){
 
 });
 
-test('scatter', 5, function() {
-    stop();
-    var heavyPromise = ns.promise(function(n,v){
-    });
-    ns.scatter(10)
-});
-
-
 });
 
 

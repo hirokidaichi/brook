@@ -10,7 +10,7 @@
 */
 Namespace('brook.channel')
 .use('brook promise')
-.use('brook.util from,scatter')
+.use('brook.util scatter')
 .define(function(ns){
     var indexOf = function(list, value) {
         for (var i = 0, l = list.length; i < l; i++) 
