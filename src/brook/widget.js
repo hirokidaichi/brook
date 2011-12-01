@@ -58,14 +58,15 @@ Namespace('brook.widget')
     var registerElements = ns.promise(function(n, v) {
         var _ns       = v[0];
         var widgets   = v[1];
+        var i,l;
         try {
             if (_ns.registerElement) {
-                for( var i = 0,l=widgets.length;i<l;i++){
+                for( i=0,l=widgets.length;i<l;i++){
                     _ns.registerElement.apply(null, widgets[i]);
                 }
             } else if (_ns.registerElements) {
                 var elements = [];
-                for( var i = 0,l=widgets.length;i<l;i++){
+                for( i=0,l=widgets.length;i<l;i++){
                     elements.push(widgets[i][0]);
                 }
                 _ns.registerElements(elements);
