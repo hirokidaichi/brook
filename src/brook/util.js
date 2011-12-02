@@ -56,14 +56,23 @@ Namespace('brook.util')
             }
         });
     };
+    var _arrayWalk = function(list,func,limit) {
+        var index = 0, length = list.length;
+        (function() {
+            var startTime = Date.now();
+            while (length > index && limit > (Date.now() - startTime))
+                func(list[index++]);
+
+            if (length > index) 
+                setTimeout(arguments.callee, 10);
+        })();
+    };
     /**
      * @name scatter
      */
-    var scatter = function(){
-        return ns.promise(function(next,val){
-            for( var i = 0, l = val.length;i<l;i++){
-                next(val[i]);
-            }
+    var scatter = function(limit){
+        return ns.promise(function(next,list){
+            _arrayWalk(list,next,(limit || 400));
         });
     };
     /**

@@ -10,7 +10,13 @@
 */
 Namespace('brook.channel')
 .use('brook promise')
+.use('brook.util scatter')
 .define(function(ns){
+    var indexOf = function(list, value) {
+        for (var i = 0, l = list.length; i < l; i++) 
+            if (list[i] === value) return i;
+        return -1;
+    };
     /**
      * @class brook.channel.createChannelで生成されるインスタンスのインナークラス
      * @name _Channel
@@ -42,12 +48,17 @@ Namespace('brook.channel')
          * @name sendMessage
          */
         proto.sendMessage = function(msg){
+            var scatter   = ns.scatter(1000);
+            var sendError = sendChannel('error');
+
             this.queue.push(msg);
             while( this.queue.length ){
-                var v = this.queue.shift();
-                for( var i = 0,l= this.promises.length;i<l;i++){
-                    this.promises[i].run(v);
-                }
+                var message = this.queue.shift();
+                var runner  = ns.promise(function(next, promise) {
+                    promise.run(message);
+                });
+                runner.setErrorHandler(sendError);
+                scatter.bind(runner).run(this.promises);
             }
         };
         /**
@@ -55,21 +66,13 @@ Namespace('brook.channel')
          */
         proto.observe = function(promise){
             //do not register same promise twice
-            for (var i = 0; i < this.promises.length; i++) {
-                if (this.promises[i] === promise) {
-                    return;
-                }
-            }
+            if (indexOf(this.promises, promise) > -1) return;
             this.promises.push(promise);
         };
 
         proto.stopObserving = function(promise){
-            for (var i = 0; i < this.promises.length; i++) {
-                if (this.promises[i] === promise) {
-                    this.promises.splice(i, 1);
-                    i--;
-                }
-            }
+            var index = indexOf(this.promises, promise);
+            if (index > -1) this.promises.splice(index, 1);
         };
     /**#@-*/
     })(Channel.prototype);
