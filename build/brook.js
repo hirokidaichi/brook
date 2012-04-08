@@ -184,11 +184,13 @@ Namespace('brook.util')
             }
         });
     };
+    var now = Date.now ? function() { return Date.now(); }
+                       : function() { return +new Date(); };
     var _arrayWalk = function(list,func,limit) {
         var index = 0, length = list.length;
         (function() {
-            var startTime = Date.now();
-            while (length > index && limit > (Date.now() - startTime))
+            var startTime = now();
+            while (length > index && limit > (now() - startTime))
                 func(list[index++]);
 
             if (length > index) 
