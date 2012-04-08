@@ -57,9 +57,9 @@ Namespace('brook').define(function(ns){
      * @param {Promise} promise
      */
     proto.ready = function(n){
-        var proc = this.next;
+        var promise = this;
         return function(val){
-            return proc(n,val);
+            return promise.subscribe(n,val);
         };
     };
     /**
