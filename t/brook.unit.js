@@ -27,6 +27,23 @@ test('promise',function(){
     p.bind(p).subscribe(function(val){
         equals( val,10000 ,'val');
     },10);
+
+});
+
+test('ready',function(){
+    expect(4);
+    var p = ns.promise(function(n,val){
+        equals( val,4 ,'val');
+        n(val);
+    }).bind(ns.mapper(ns.lambda("$*$")));
+
+    var func = p.ready(function(val){
+        ok(true,'pass');
+        equals( val,16 ,'val');
+    });
+    func(4);
+
+    p.ready()(4);
 });
 
 test('through',function(){

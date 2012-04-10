@@ -57,9 +57,9 @@ Namespace('brook').define(function(ns){
      * @param {Promise} promise
      */
     proto.ready = function(n){
-        var proc = this.next;
+        var promise = this;
         return function(val){
-            return proc(n,val);
+            return promise.subscribe(n,val);
         };
     };
     /**
@@ -184,11 +184,13 @@ Namespace('brook.util')
             }
         });
     };
+    var now = Date.now ? function() { return Date.now(); }
+                       : function() { return +new Date(); };
     var _arrayWalk = function(list,func,limit) {
         var index = 0, length = list.length;
         (function() {
-            var startTime = Date.now();
-            while (length > index && limit > (Date.now() - startTime))
+            var startTime = now();
+            while (length > index && limit > (now() - startTime))
                 func(list[index++]);
 
             if (length > index) 
