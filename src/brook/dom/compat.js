@@ -3,6 +3,7 @@
 @author daichi.hiroki<hirokidaichi@gmail.com>
 */
 
+/*global Namespace window HTMLElement document*/
 
 /**
 @name brook.dom.compat
@@ -14,7 +15,7 @@ Namespace('brook.dom.compat')
         var wrapper = function(element){
             return element.dataset;
         };
-        if( window["HTMLElemenT"] && HTMLElement.prototype ){
+        if( 'HTMLElement' in window && HTMLElement.prototype ){
             var proto = HTMLElement.prototype;
             if( proto.dataset ) 
                 return wrapper;
@@ -47,7 +48,7 @@ Namespace('brook.dom.compat')
 
     (function(proto){
         var check = function(token) {
-            if (token == "") {
+            if (token === "") {
                 throw "SYNTAX_ERR";
             }
             if (token.indexOf(/\s/) != -1) {
@@ -57,10 +58,10 @@ Namespace('brook.dom.compat')
         this._fake = true;
         this._refresh = function () {
             var classes = (this._element.className || '').split(/\s+/);
-            if (classes.length && classes[0] == "") {
+            if (classes.length && classes[0] === "") {
                 classes.shift();
             }
-            if (classes.length && classes[classes.length - 1] == "") {
+            if (classes.length && classes[classes.length - 1] === "") {
                 classes.pop();
             }
             this._classList = classes;
@@ -78,7 +79,7 @@ Namespace('brook.dom.compat')
                 }
             }
             return false;
-        }
+        };
         this.add = function (token) {
             check(token);
             for (var i = 0; i < this.length; ++i) {
@@ -89,7 +90,7 @@ Namespace('brook.dom.compat')
             this._classList.push(token);
             this.length = this._classList.length;
             this._element.className = this._classList.join(" ");
-        }
+        };
         this.remove = function (token) {
             check(token);
             for (var i = 0; i < this._classList.length; ++i) {
@@ -99,7 +100,7 @@ Namespace('brook.dom.compat')
                 }
             }
             this.length = this._classList.length;
-        }
+        };
         this.toggle = function (token) {
             check(token);
             for (var i = 0; i < this.length; ++i) {
@@ -110,7 +111,7 @@ Namespace('brook.dom.compat')
             }
             this.add(token);
             return true;
-        }
+        };
     }).apply(ClassList.prototype);
 
     var hasClassName = function(element,className){
@@ -125,7 +126,7 @@ Namespace('brook.dom.compat')
         for(var i=0,l=allElements.length;i<l;i++){
             if( !hasClassName( allElements[i] , className ) )
                 continue;
-            ret.push( allElements[i] )
+            ret.push( allElements[i] );
         }
         return ret;
     };

@@ -3,6 +3,7 @@
 @author daichi.hiroki<hirokidaichi@gmail.com>
 */
 
+/*global Namespace setTimeout console setInterval clearInterval*/
 
 /**
 @name brook.util
@@ -50,7 +51,7 @@ Namespace('brook.util')
         var queue = [];
         return ns.promise(function(next,val){
             queue.push( val );
-            if( num++ % (by) ==0){
+            if( num++ % (by) === 0){
                 next(queue);
                 queue = [];
             }
@@ -81,8 +82,9 @@ Namespace('brook.util')
      * @name wait
      */
     var wait = function(msec){
-        var msecFunc = ( typeof msec == 'function' )
-            ? msec : function(){return msec};
+        var msecFunc
+            = ( typeof msec == 'function' ) ?
+                msec : function(){return msec;};
         return ns.promise(function(next,val){
             setTimeout(function(){
                 next(val);
@@ -94,12 +96,12 @@ Namespace('brook.util')
             if( f() ){
                 return next(val);
             }
-            setTimeout(function(){ p(next,val)},100);
+            setTimeout(function(){ p(next,val);},100);
         };
         return ns.promise(p);
     };
     var debug = function(sig){
-        var sig = sig ? sig : "debug";
+        sig = sig ? sig : "debug";
         return through(function(val) {
             console.log(sig + ":",val);
         });
@@ -115,7 +117,7 @@ Namespace('brook.util')
     };
     var match = function(dispatchTable){
         return ns.promise(function(next,val){
-            var promise = dispatchTable[val] || dispatchTable['__default__'] || ns.promise();
+            var promise = dispatchTable[val] || dispatchTable.__default__ || ns.promise();
             promise.subscribe(function(v){
                 next(v);
             },val);
@@ -154,8 +156,9 @@ Namespace('brook.util')
     };
     var EMIT_INTERVAL_MAP = {};
     var emitInterval = function(msec, name){
-        var msecFunc = ( typeof msec == 'function' )
-            ? msec : function(){return msec};
+        var msecFunc
+            = ( typeof msec == 'function' ) ?
+                msec : function(){return msec;};
 
         return ns.promise(function(next,val){
             var id = setInterval(function(){
