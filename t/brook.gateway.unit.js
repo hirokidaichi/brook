@@ -91,13 +91,13 @@ test('named channel',function(){
     ns.observeChannel('test-channel',
         ns.promise(function(n,v){
             ok(n);
-            equals( v.length , 3);
+            equal( v.length , 3);
         }).bind(ns.debug())
     );
     ns.observeChannel('test-channel',
         ns.promise(function(n,v){
             ok(v);
-            equals( v.length , 3);
+            equal( v.length , 3);
         }).bind(ns.debug())
     );
 
@@ -109,7 +109,7 @@ test('named channel',function(){
     l.run([1,2,3,4,5,6,7,8,9]);
 
     var promise = ns.promise(function(n, v) {
-        equals(v, 'ok');
+        equal(v, 'ok');
     });
 
     ns.observeChannel('test-channel-2', promise);
@@ -128,13 +128,13 @@ test('channel',function(){
     channel.observe( 
         ns.promise(function(n,v){
             ok(n);
-            equals( v.length , 3);
+            equal( v.length , 3);
         }).bind(ns.debug())
     );
     channel.observe(
         ns.promise(function(n,v){
             ok(v);
-            equals( v.length , 3);
+            equal( v.length , 3);
         }).bind(ns.debug())
     );
 
@@ -146,7 +146,7 @@ test('channel',function(){
     l.run([1,2,3,4,5,6,7,8,9]);
 
     var promise = ns.promise(function(n, v) {
-        equals(v, 'ok');
+        equal(v, 'ok');
     });
 
     var channel = ns.createChannel();

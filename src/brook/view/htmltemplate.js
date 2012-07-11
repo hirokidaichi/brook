@@ -3,6 +3,7 @@
 @author daichi.hiroki<hirokidaichi@gmail.com>
 */
 
+/*global Namespace window document Node*/
 
 /**
 @name brook.view.htmltemplate
@@ -96,7 +97,6 @@ Namespace('brook.view.htmltemplate')
         return result.join('');
     };
     var _getFunctionTextFromElement = function( element ) {
-        var elementId  = element.id;
         return ns.getFunctionText(_getSourceFromElement( element ));
     };
     merge( Klass , {

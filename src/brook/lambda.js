@@ -3,6 +3,7 @@
 @author daichi.hiroki<hirokidaichi@gmail.com>
 */
 
+/*global Namespace*/
 
 /**
 @name brook.lambda
@@ -44,6 +45,7 @@ Namespace('brook.lambda')
         if( cache[expression] )
             return cache[expression];
         var parsed = parseExpression(expression);
+        /*jshint evil: true */
         var func = new Function( parsed.argumentNames,"return ("+ parsed.body + ");");
         cache[expression] = func;
         return func;

@@ -3,6 +3,7 @@
 @author daichi.hiroki<hirokidaichi@gmail.com>
 */
 
+/*global Namespace sendChannel*/
 
 /**
 @name brook.channel
@@ -32,12 +33,12 @@ Namespace('brook.channel')
     /**#@+
      * @methodOf brook.channel._Channel.prototype
      */
-        var through = function(k){return k};
+        var through = function(k){return k;};
         /**
          * @name send
          */
         proto.send = function(func){
-            var func = ( func ) ? func : through;
+            func = ( func ) ? func : through;
             var _self = this;
             return ns.promise(function(next,val){
                 _self.sendMessage(func(val));
@@ -52,11 +53,14 @@ Namespace('brook.channel')
             var sendError = sendChannel('error');
 
             this.queue.push(msg);
-            while( this.queue.length ){
-                var message = this.queue.shift();
-                var runner  = ns.promise(function(next, promise) {
+            var makeRunner = function(message) {
+                return ns.promise(function(next, promise) {
                     promise.run(message);
                 });
+            };
+            while( this.queue.length ){
+                var message = this.queue.shift();
+                var runner  = makeRunner(message);
                 runner.setErrorHandler(sendError);
                 scatter.bind(runner).run(this.promises);
             }
