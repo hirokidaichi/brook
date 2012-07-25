@@ -3,6 +3,8 @@
 @author daichi.hiroki<hirokidaichi@gmail.com>
 */
 
+/*global Namespace*/
+
 
 /**
 @name brook
@@ -74,7 +76,7 @@ Namespace('brook').define(function(ns){
      * @param {Promise} promise
      */
     proto.subscribe = function(next,val){
-        var next = next ? next : function(){};
+        next = next ? next : function(){};
         if( !this.errorHandler )
             return this.next(next,val);
         
@@ -101,7 +103,7 @@ Namespace('brook').define(function(ns){
      * @name onError
      */
     proto.onError = function(e){
-        (this.errorHandler||new Promise).subscribe(function(){},e);
+        (this.errorHandler||(new Promise())).subscribe(function(){},e);
     };
     /**#@-*/
     })(Promise.prototype);
@@ -119,18 +121,20 @@ Namespace('brook').define(function(ns){
      * @example
      * var p = ns.promise();
      */
-    var promise = function(next){return new Promise(next)};
+    var promise = function(next){return new Promise(next);};
     ns.provide({
         promise : promise,
         VERSION : VERSION
     });
 });
 
+
 /**
 @fileOverview brook.util
 @author daichi.hiroki<hirokidaichi@gmail.com>
 */
 
+/*global Namespace setTimeout console setInterval clearInterval*/
 
 /**
 @name brook.util
@@ -178,7 +182,7 @@ Namespace('brook.util')
         var queue = [];
         return ns.promise(function(next,val){
             queue.push( val );
-            if( num++ % (by) ==0){
+            if( num++ % (by) === 0){
                 next(queue);
                 queue = [];
             }
@@ -209,8 +213,9 @@ Namespace('brook.util')
      * @name wait
      */
     var wait = function(msec){
-        var msecFunc = ( typeof msec == 'function' )
-            ? msec : function(){return msec};
+        var msecFunc
+            = ( typeof msec == 'function' ) ?
+                msec : function(){return msec;};
         return ns.promise(function(next,val){
             setTimeout(function(){
                 next(val);
@@ -222,12 +227,12 @@ Namespace('brook.util')
             if( f() ){
                 return next(val);
             }
-            setTimeout(function(){ p(next,val)},100);
+            setTimeout(function(){ p(next,val);},100);
         };
         return ns.promise(p);
     };
     var debug = function(sig){
-        var sig = sig ? sig : "debug";
+        sig = sig ? sig : "debug";
         return through(function(val) {
             console.log(sig + ":",val);
         });
@@ -243,7 +248,7 @@ Namespace('brook.util')
     };
     var match = function(dispatchTable){
         return ns.promise(function(next,val){
-            var promise = dispatchTable[val] || dispatchTable['__default__'] || ns.promise();
+            var promise = dispatchTable[val] || dispatchTable.__default__ || ns.promise();
             promise.subscribe(function(v){
                 next(v);
             },val);
@@ -282,8 +287,9 @@ Namespace('brook.util')
     };
     var EMIT_INTERVAL_MAP = {};
     var emitInterval = function(msec, name){
-        var msecFunc = ( typeof msec == 'function' )
-            ? msec : function(){return msec};
+        var msecFunc
+            = ( typeof msec == 'function' ) ?
+                msec : function(){return msec;};
 
         return ns.promise(function(next,val){
             var id = setInterval(function(){
@@ -322,11 +328,13 @@ Namespace('brook.util')
 
 
 
+
 /**
 @fileOverview brook.lambda
 @author daichi.hiroki<hirokidaichi@gmail.com>
 */
 
+/*global Namespace*/
 
 /**
 @name brook.lambda
@@ -368,6 +376,7 @@ Namespace('brook.lambda')
         if( cache[expression] )
             return cache[expression];
         var parsed = parseExpression(expression);
+        /*jshint evil: true */
         var func = new Function( parsed.argumentNames,"return ("+ parsed.body + ");");
         cache[expression] = func;
         return func;
@@ -376,11 +385,13 @@ Namespace('brook.lambda')
         lambda : lambda
     });
 });
+
 /**
 @fileOverview brook.channel
 @author daichi.hiroki<hirokidaichi@gmail.com>
 */
 
+/*global Namespace sendChannel*/
 
 /**
 @name brook.channel
@@ -410,12 +421,12 @@ Namespace('brook.channel')
     /**#@+
      * @methodOf brook.channel._Channel.prototype
      */
-        var through = function(k){return k};
+        var through = function(k){return k;};
         /**
          * @name send
          */
         proto.send = function(func){
-            var func = ( func ) ? func : through;
+            func = ( func ) ? func : through;
             var _self = this;
             return ns.promise(function(next,val){
                 _self.sendMessage(func(val));
@@ -430,11 +441,14 @@ Namespace('brook.channel')
             var sendError = sendChannel('error');
 
             this.queue.push(msg);
-            while( this.queue.length ){
-                var message = this.queue.shift();
-                var runner  = ns.promise(function(next, promise) {
+            var makeRunner = function(message) {
+                return ns.promise(function(next, promise) {
                     promise.run(message);
                 });
+            };
+            while( this.queue.length ){
+                var message = this.queue.shift();
+                var runner  = makeRunner(message);
                 runner.setErrorHandler(sendError);
                 scatter.bind(runner).run(this.promises);
             }
@@ -490,11 +504,13 @@ Namespace('brook.channel')
 });
 
 
+
 /**
 @fileOverview brook/model.js
 @author daichi.hiroki<hirokidaichi@gmail.com>
 */
 
+/*global Namespace*/
 
 /**
 @name brook.model
@@ -554,14 +570,15 @@ var module = { exports : {}};
 /* 2008 Daichi Hiroki <hirokidaichi@gmail.com>
  * html-template-core.js is freely distributable under the terms of MIT-style license.
  * ( latest infomation :https://github.com/hirokidaichi/html-template )
-/*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
+ /*global module*/
 var util = {};
 util.defineClass = function(obj,superClass){
     var klass = function Klass(){
         this.initialize.apply(this,arguments);
     };
     
-    if(superClass) klass.prototype = new superClass;
+    if(superClass) klass.prototype = new superClass();
     for(var prop in obj ){
         if( !obj.hasOwnProperty(prop) )
             continue;
@@ -578,7 +595,7 @@ util.merge = function(origin,target){
         origin[prop] = target[prop];
     }
 };
-util.k = function(k){return k};
+util.k = function(k){return k;};
 util.emptyFunction = function(){};
 util.listToArray = function(list){
     return Array.prototype.slice.call(list);
@@ -588,12 +605,12 @@ util.curry = function() {
     var f    = args.shift();
     return function() {
       return f.apply(this, args.concat(util.listToArray(arguments)));
-    }
+    };
 };
 
 util.merge(util,{
     isArray: function(object) {
-        return object != null && typeof object == "object" &&
+        return object !== null && typeof object == "object" &&
           'splice' in object && 'join' in object;
     },
     isFunction: function(object) {
@@ -628,7 +645,7 @@ util.createRegexMatcher = function(escapeChar,expArray){
         regValues.mapping[e.map].push(++count);
         
     }
-    var reg = undefined;
+    var reg;
     regValues.text = _escape(regValues.text.join(''));
     return function matcher(matchingText){
         if(!reg){
@@ -739,7 +756,7 @@ element.Base = util.defineClass({
     },
     mergeOption : function(option){
         util.merge(this,option);
-        this['isCloseTag'] =(this['isCloseTag'])? true: false;
+        this.isCloseTag = (this.isCloseTag) ? true: false;
     },
     isParent : util.emptyFunction,
     execute  : util.emptyFunction,
@@ -770,23 +787,23 @@ element.Base = util.defineClass({
     },
     getParam: function() {
         var ret = "";
-        if (this.attributes['name']) {
-            var matched = this.attributes['name'].match(/^(\/|(?:\.\.\/)+)(\w+)/);
+        if (this.attributes.name) {
+            var matched = this.attributes.name.match(/^(\/|(?:\.\.\/)+)(\w+)/);
             if(matched){
                 return this._pathLike(matched[2],matched[1]);
             }
             var _default = ( this.attributes['default'] )? "'"+this.attributes['default']+"'":"undefined";
             ret =  [
                 "(($_T['"            ,
-                    this.attributes['name'] ,
+                    this.attributes.name ,
                 "']) ? $_T['"        ,
-                    this.attributes['name'] ,
+                    this.attributes.name ,
                 "'] : ",
                     _default,
                 " )"
             ].join('');
         }
-        if (this.attributes['expr']) {
+        if (this.attributes.expr) {
             var operators = {
                 'gt' :'>',
                 'lt' :'<',
@@ -795,7 +812,7 @@ element.Base = util.defineClass({
                 'ge' :'>=',
                 'le' :'<='
             };
-            var replaced = this.attributes['expr'].replace(/{(\/|(?:\.\.\/)+)(\w+)}/g,function(full,matched,param){
+            var replaced = this.attributes.expr.replace(/\{(\/|(?:\.\.\/)+)(\w+)\}/g,function(full,matched,param){
                 return [
                      '$_C[',
                      (matched == '/')?'0':'$_C.length -'+(matched.split('..').length-1),
@@ -812,7 +829,7 @@ element.Base = util.defineClass({
                 "}}})()"
             ].join('');
         }
-        if(this.attributes['escape']){
+        if(this.attributes.escape){
             var _escape = {
                 NONE: 'NONE',
                 0   : 'NONE',
@@ -820,7 +837,7 @@ element.Base = util.defineClass({
                 HTML: 'HTML',
                 JS  : 'JS',
                 URL : 'URL'
-            }[this.attributes['escape']];
+            }[this.attributes.escape];
             ret = [
                 '$_F.__escape'+_escape+'(',
                 ret,
@@ -848,7 +865,7 @@ util.merge( element , {
                     'var $_C  = [param];',
                     'var $_F  = funcs||{};',
                     'var $_T  = param||{};',
-                    'var $_S  = cache.STRING_FRAGMENT;',
+                    'var $_S  = cache.STRING_FRAGMENT;'
                 ].join('');
             }
         }
@@ -934,7 +951,7 @@ util.merge( element , {
             if (this.isCloseTag) {
                 throw(new Error('HTML.Template ParseError No Close Tag for TMPL_INCLUDE'));
             } else {
-                var name = '"'+(this.attributes['name'])+'"';
+                var name = '"'+(this.attributes.name)+'"';
                 return [
                     '$_R.push($_F.__include(',name,',$_T,$_F));'
                 ].join('\n');
@@ -1002,7 +1019,7 @@ var parseHTMLTemplate = function(source) {
             var text = source.slice(0, index);
             chunks.push(createElement('TEXT', text));
             source = source.slice(index);
-        };
+        }
         var attr,name,value;
         if ( results.attribute_name ) {
             name  = results.attribute_name.toLowerCase();
@@ -1010,7 +1027,7 @@ var parseHTMLTemplate = function(source) {
             attr  = {};
             attr[name]      = value;
             attr['default'] = results['default'];
-            attr['escape']  = results['escape'];
+            attr.escape     = results.escape;
         } else {
             attr = undefined;
         }
@@ -1020,7 +1037,7 @@ var parseHTMLTemplate = function(source) {
             'parent'    : this
         }));
         source = source.slice(fullText.length);
-    };
+    }
     chunks.push(createElement('ROOT', {
         isCloseTag: true
     }));
@@ -1035,18 +1052,20 @@ module.exports.getFunctionText = function(chunksOrSource){
 };
 
 module.exports.compileFunctionText = function(functionText){
+    /*jshint evil: true */
     return util.curry(new Function('cache','param','funcs',functionText),cache);
 };
 
 
-
 ns.provide(module.exports);
 });
+
 /**
 @fileOverview brook/view/htmltemplate.js
 @author daichi.hiroki<hirokidaichi@gmail.com>
 */
 
+/*global Namespace window document Node*/
 
 /**
 @name brook.view.htmltemplate
@@ -1140,7 +1159,6 @@ Namespace('brook.view.htmltemplate')
         return result.join('');
     };
     var _getFunctionTextFromElement = function( element ) {
-        var elementId  = element.id;
         return ns.getFunctionText(_getSourceFromElement( element ));
     };
     merge( Klass , {
@@ -1196,11 +1214,13 @@ Namespace('brook.view.htmltemplate')
         HTMLTemplate : Klass
     });
 });
+
 /**
 @fileOverview brook/compat.js
 @author daichi.hiroki<hirokidaichi@gmail.com>
 */
 
+/*global Namespace window HTMLElement document*/
 
 /**
 @name brook.dom.compat
@@ -1212,7 +1232,7 @@ Namespace('brook.dom.compat')
         var wrapper = function(element){
             return element.dataset;
         };
-        if( window["HTMLElemenT"] && HTMLElement.prototype ){
+        if( 'HTMLElement' in window && HTMLElement.prototype ){
             var proto = HTMLElement.prototype;
             if( proto.dataset ) 
                 return wrapper;
@@ -1245,7 +1265,7 @@ Namespace('brook.dom.compat')
 
     (function(proto){
         var check = function(token) {
-            if (token == "") {
+            if (token === "") {
                 throw "SYNTAX_ERR";
             }
             if (token.indexOf(/\s/) != -1) {
@@ -1255,10 +1275,10 @@ Namespace('brook.dom.compat')
         this._fake = true;
         this._refresh = function () {
             var classes = (this._element.className || '').split(/\s+/);
-            if (classes.length && classes[0] == "") {
+            if (classes.length && classes[0] === "") {
                 classes.shift();
             }
-            if (classes.length && classes[classes.length - 1] == "") {
+            if (classes.length && classes[classes.length - 1] === "") {
                 classes.pop();
             }
             this._classList = classes;
@@ -1276,7 +1296,7 @@ Namespace('brook.dom.compat')
                 }
             }
             return false;
-        }
+        };
         this.add = function (token) {
             check(token);
             for (var i = 0; i < this.length; ++i) {
@@ -1287,7 +1307,7 @@ Namespace('brook.dom.compat')
             this._classList.push(token);
             this.length = this._classList.length;
             this._element.className = this._classList.join(" ");
-        }
+        };
         this.remove = function (token) {
             check(token);
             for (var i = 0; i < this._classList.length; ++i) {
@@ -1297,7 +1317,7 @@ Namespace('brook.dom.compat')
                 }
             }
             this.length = this._classList.length;
-        }
+        };
         this.toggle = function (token) {
             check(token);
             for (var i = 0; i < this.length; ++i) {
@@ -1308,7 +1328,7 @@ Namespace('brook.dom.compat')
             }
             this.add(token);
             return true;
-        }
+        };
     }).apply(ClassList.prototype);
 
     var hasClassName = function(element,className){
@@ -1323,7 +1343,7 @@ Namespace('brook.dom.compat')
         for(var i=0,l=allElements.length;i<l;i++){
             if( !hasClassName( allElements[i] , className ) )
                 continue;
-            ret.push( allElements[i] )
+            ret.push( allElements[i] );
         }
         return ret;
     };
@@ -1335,16 +1355,21 @@ Namespace('brook.dom.compat')
         classList : classList
     });
 });
+
+/*global Namespace*/
+
 Namespace('brook.dom.gateway')
 .define(function(ns){
 
     ns.provide({});
 });
+
 /**
 @fileOverview brook/widget.js
 @author daichi.hiroki<hirokidaichi@gmail.com>
 */
 
+/*global Namespace*/
 
 /**
 @name brook.widget
@@ -1439,6 +1464,9 @@ Namespace('brook.widget')
         bindAllWidget : widgetChannel.send()
     });
 });
+
+
+/*global Namespace*/
 
 Namespace('brook.dom.event')
 .use('brook promise')
