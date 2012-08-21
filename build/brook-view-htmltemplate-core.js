@@ -1,4 +1,3 @@
-
 Namespace("brook.view.htmltemplate.core")
 .define(function(ns){
 var module = { exports : {}};
@@ -6,14 +5,15 @@ var module = { exports : {}};
 /* 2008 Daichi Hiroki <hirokidaichi@gmail.com>
  * html-template-core.js is freely distributable under the terms of MIT-style license.
  * ( latest infomation :https://github.com/hirokidaichi/html-template )
-/*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
+ /*global module*/
 var util = {};
 util.defineClass = function(obj,superClass){
     var klass = function Klass(){
         this.initialize.apply(this,arguments);
     };
     
-    if(superClass) klass.prototype = new superClass;
+    if(superClass) klass.prototype = new superClass();
     for(var prop in obj ){
         if( !obj.hasOwnProperty(prop) )
             continue;
@@ -30,7 +30,7 @@ util.merge = function(origin,target){
         origin[prop] = target[prop];
     }
 };
-util.k = function(k){return k};
+util.k = function(k){return k;};
 util.emptyFunction = function(){};
 util.listToArray = function(list){
     return Array.prototype.slice.call(list);
@@ -40,12 +40,12 @@ util.curry = function() {
     var f    = args.shift();
     return function() {
       return f.apply(this, args.concat(util.listToArray(arguments)));
-    }
+    };
 };
 
 util.merge(util,{
     isArray: function(object) {
-        return object != null && typeof object == "object" &&
+        return object !== null && typeof object == "object" &&
           'splice' in object && 'join' in object;
     },
     isFunction: function(object) {
@@ -80,7 +80,7 @@ util.createRegexMatcher = function(escapeChar,expArray){
         regValues.mapping[e.map].push(++count);
         
     }
-    var reg = undefined;
+    var reg;
     regValues.text = _escape(regValues.text.join(''));
     return function matcher(matchingText){
         if(!reg){
@@ -191,7 +191,7 @@ element.Base = util.defineClass({
     },
     mergeOption : function(option){
         util.merge(this,option);
-        this['isCloseTag'] =(this['isCloseTag'])? true: false;
+        this.isCloseTag = (this.isCloseTag) ? true: false;
     },
     isParent : util.emptyFunction,
     execute  : util.emptyFunction,
@@ -222,23 +222,23 @@ element.Base = util.defineClass({
     },
     getParam: function() {
         var ret = "";
-        if (this.attributes['name']) {
-            var matched = this.attributes['name'].match(/^(\/|(?:\.\.\/)+)(\w+)/);
+        if (this.attributes.name) {
+            var matched = this.attributes.name.match(/^(\/|(?:\.\.\/)+)(\w+)/);
             if(matched){
                 return this._pathLike(matched[2],matched[1]);
             }
             var _default = ( this.attributes['default'] )? "'"+this.attributes['default']+"'":"undefined";
             ret =  [
                 "(($_T['"            ,
-                    this.attributes['name'] ,
+                    this.attributes.name ,
                 "']) ? $_T['"        ,
-                    this.attributes['name'] ,
+                    this.attributes.name ,
                 "'] : ",
                     _default,
                 " )"
             ].join('');
         }
-        if (this.attributes['expr']) {
+        if (this.attributes.expr) {
             var operators = {
                 'gt' :'>',
                 'lt' :'<',
@@ -247,7 +247,7 @@ element.Base = util.defineClass({
                 'ge' :'>=',
                 'le' :'<='
             };
-            var replaced = this.attributes['expr'].replace(/{(\/|(?:\.\.\/)+)(\w+)}/g,function(full,matched,param){
+            var replaced = this.attributes.expr.replace(/\{(\/|(?:\.\.\/)+)(\w+)\}/g,function(full,matched,param){
                 return [
                      '$_C[',
                      (matched == '/')?'0':'$_C.length -'+(matched.split('..').length-1),
@@ -264,7 +264,7 @@ element.Base = util.defineClass({
                 "}}})()"
             ].join('');
         }
-        if(this.attributes['escape']){
+        if(this.attributes.escape){
             var _escape = {
                 NONE: 'NONE',
                 0   : 'NONE',
@@ -272,7 +272,7 @@ element.Base = util.defineClass({
                 HTML: 'HTML',
                 JS  : 'JS',
                 URL : 'URL'
-            }[this.attributes['escape']];
+            }[this.attributes.escape];
             ret = [
                 '$_F.__escape'+_escape+'(',
                 ret,
@@ -300,7 +300,7 @@ util.merge( element , {
                     'var $_C  = [param];',
                     'var $_F  = funcs||{};',
                     'var $_T  = param||{};',
-                    'var $_S  = cache.STRING_FRAGMENT;',
+                    'var $_S  = cache.STRING_FRAGMENT;'
                 ].join('');
             }
         }
@@ -386,7 +386,7 @@ util.merge( element , {
             if (this.isCloseTag) {
                 throw(new Error('HTML.Template ParseError No Close Tag for TMPL_INCLUDE'));
             } else {
-                var name = '"'+(this.attributes['name'])+'"';
+                var name = '"'+(this.attributes.name)+'"';
                 return [
                     '$_R.push($_F.__include(',name,',$_T,$_F));'
                 ].join('\n');
@@ -454,7 +454,7 @@ var parseHTMLTemplate = function(source) {
             var text = source.slice(0, index);
             chunks.push(createElement('TEXT', text));
             source = source.slice(index);
-        };
+        }
         var attr,name,value;
         if ( results.attribute_name ) {
             name  = results.attribute_name.toLowerCase();
@@ -462,7 +462,7 @@ var parseHTMLTemplate = function(source) {
             attr  = {};
             attr[name]      = value;
             attr['default'] = results['default'];
-            attr['escape']  = results['escape'];
+            attr.escape     = results.escape;
         } else {
             attr = undefined;
         }
@@ -472,7 +472,7 @@ var parseHTMLTemplate = function(source) {
             'parent'    : this
         }));
         source = source.slice(fullText.length);
-    };
+    }
     chunks.push(createElement('ROOT', {
         isCloseTag: true
     }));
@@ -487,9 +487,9 @@ module.exports.getFunctionText = function(chunksOrSource){
 };
 
 module.exports.compileFunctionText = function(functionText){
+    /*jshint evil: true */
     return util.curry(new Function('cache','param','funcs',functionText),cache);
 };
-
 
 
 ns.provide(module.exports);
