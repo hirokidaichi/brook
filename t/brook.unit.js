@@ -118,7 +118,7 @@ test('cond',function(){with(ns){
 }});
 
 test('match',function(){with(ns){
-    expect(4);
+    expect(9);
     var p = promise().bind(
         match({
             10 : ns.promise(function(n,v){ equal(v,10);n(v)}),
@@ -129,6 +129,41 @@ test('match',function(){with(ns){
         })
     );
     scatter().bind(p).run([10,11,12]);
+
+    var dispatchTable = {
+        mode_should_be_foo : ns.promise(function(n,v){ equal(v.mode, 'foo'); n(v);}),
+        mode_should_be_bar : ns.promise(function(n,v){ equal(v.mode, 'bar'); }),
+        mode_should_be_baz : ns.promise(function(n,v){ equal(v.mode, 'baz'); }),
+    };
+    var before = promise(function(n,v){
+        var ret = {
+            mode : v,
+            value : 'before_value'
+        };
+        n(ret);
+    });
+    var matcher = function(v){
+        var ret;
+        switch (v.mode) {
+            case 'foo' :
+                ret = 'mode_should_be_foo';
+                break;
+            case 'bar' :
+                ret = 'mode_should_be_bar';
+                break;
+            case 'baz' :
+                ret = 'mode_should_be_baz';
+                break;
+        };
+        return ret;
+    };
+    var after = promise(function(n,v){
+        equal(v.mode, 'foo');
+        equal(v.value, 'before_value');
+    });
+    scatter().bind(
+        before.bind(match(dispatchTable, matcher), after)
+    ).run(['foo','bar','baz']);
 }});
 
 test('named channel',function(){
