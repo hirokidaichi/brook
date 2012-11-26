@@ -246,9 +246,13 @@ Namespace('brook.util')
             },val);
         });
     };
-    var match = function(dispatchTable){
+    var match = function(dispatchTable, matcher){
         return ns.promise(function(next,val){
-            var promise = dispatchTable[val] || dispatchTable.__default__ || ns.promise();
+            var promise;
+            if(matcher)
+                promise = dispatchTable[matcher(val)];
+            if(!promise)
+                promise = dispatchTable[val] || dispatchTable.__default__ || ns.promise();
             promise.subscribe(function(v){
                 next(v);
             },val);
