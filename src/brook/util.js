@@ -59,23 +59,34 @@ Namespace('brook.util')
     };
     var now = Date.now ? function() { return Date.now(); }
                        : function() { return +new Date(); };
-    var _arrayWalk = function(list,func,limit) {
+    var _arrayWalk = function(list,func) {
+        for (var i = 0, l = list.length; i < l; i++) {
+            func(list[i]);
+        }
+    };
+    var _arrayWalkWithLimit = function (list, func, limit) {
         var index = 0, length = list.length;
         (function() {
             var startTime = now();
             while (length > index && limit > (now() - startTime))
                 func(list[index++]);
 
-            if (length > index) 
+            if (length > index)
                 setTimeout(arguments.callee, 10);
         })();
+    };
+    var _getArrayWalkWithLimit = function(limit) {
+        return function (list, func) {
+            _arrayWalkWithLimit(list, func, limit);
+        };
     };
     /**
      * @name scatter
      */
     var scatter = function(limit){
+        var func = limit ? _getArrayWalkWithLimit(limit) : _arrayWalk;
         return ns.promise(function(next,list){
-            _arrayWalk(list,next,(limit || 400));
+            func(list,next);
         });
     };
     /**
