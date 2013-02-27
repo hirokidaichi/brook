@@ -12,22 +12,12 @@
 Namespace('brook.dom.compat')
 .define(function(ns){
     var dataset = (function(){
-        var wrapper = function(element){
-            return element.dataset;
-        };
-        if( 'HTMLElement' in window && HTMLElement.prototype ){
-            var proto = HTMLElement.prototype;
-            if( proto.dataset ) 
-                return wrapper;
-            if( proto.__lookupGetter__ && proto.__lookupGetter__('dataset') ) 
-                return wrapper;
-        }
         var camelize = function(string){
             return string.replace(/-+(.)?/g, function(match, chr) {
               return chr ? chr.toUpperCase() : '';
             });
         };
-        return function(element){
+        var datasetCompat = function(element){
             var sets = {};
             for(var i=0,a=element.attributes,l=a.length;i<l;i++){
                 var attr = a[i];
@@ -35,6 +25,14 @@ Namespace('brook.dom.compat')
                 sets[camelize(attr.name.replace(/^data-/,''))] = attr.value;
             }
             return sets;
+        };
+
+        return function(element){
+            var d = element.dataset;
+            if (d && d instanceof DOMStringMap) {
+                return d;
+            }
+            return datasetCompat(element);
         };
     })();
     
