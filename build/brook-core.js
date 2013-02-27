@@ -289,7 +289,7 @@ Namespace('brook.util')
         return ns.promise(tryLock);
     };
     var from = function(value){
-        if( value.observe ){
+        if( value && value.observe ){
             return ns.promise(function(next,val){
                 value.observe(ns.promise(function(n,v){
                     next(v);
