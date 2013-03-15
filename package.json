@@ -1,0 +1,22 @@
+{
+  "name": "brook",
+  "version": "0.0.1",
+  "description": "中／大規模開発のためのJavaScript Framework",
+  "main": "none",
+  "scripts": {
+    "test": "grunt qunit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hirokidaichi/brook.git"
+  },
+  "keywords": [
+    "javascript",
+    "framework"
+  ],
+  "author": "hirokidaichi",
+  "license": "none",
+  "devDependencies": {
+    "grunt": ">= 0.3.x"
+  }
+}
