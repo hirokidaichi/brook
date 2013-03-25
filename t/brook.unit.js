@@ -46,6 +46,22 @@ test('ready',function(){
     p.ready()(4);
 });
 
+test('error',function(){
+    expect(4);
+    var p = ns.promise(function(n,val){
+        ok(true,'pass');
+        if (val == 2) throw('error');
+        else n(val)
+    }, function(e){
+        ok(true,'error handle');
+    })
+    .ready(function(v) {
+        equal(1, v, 'success');
+    });
+    p(1);
+    p(2);
+});
+
 test('through',function(){
     expect(2);
     var p = ns.mapper(ns.lambda('$*2'));
