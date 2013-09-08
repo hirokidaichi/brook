@@ -1,3 +1,4 @@
+/* global HTMLTemplate:false, Namespace:false, test:false, expect:false, ok:false, equal:false, stop:false, start:false */
 
 Namespace('test')
 .use('brook.dom.compat classList,dataset')
@@ -9,9 +10,9 @@ Namespace('test')
             ok(! ns.classList(element).contains('widget'),'element contains class-name "widget"');
             equal( ns.dataset(element).widgetNamespace , namespace );
         });
-    }
+    };
     ns.provide({
-        isValidElement : isValidElement 
+        isValidElement : isValidElement
     });
 });
 

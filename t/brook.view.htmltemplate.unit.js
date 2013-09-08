@@ -1,4 +1,4 @@
-
+/* global HTMLTemplate:false, Namespace:false, test:false, expect:false, ok:false, equal:false, stop:false, start:false */
 
 var COMPLEX_TMPL =[
     '<h1>Test <TMPL_VAR NAME=name></h1>',
@@ -25,26 +25,26 @@ var COMPLEX_TMPL =[
 
 Namespace('main')
 .use('brook.view.htmltemplate HTMLTemplate')
-.apply(function(ns){with(ns){
+.apply(function(ns){
 
 test('var',function(){
-    var x = HTMLTemplate.get('<TMPL_VAR NAME=test1><TMPL_VAR NAME=test2><TMPL_VAR NAME=test3>');
+    var x = ns.HTMLTemplate.get('<TMPL_VAR NAME=test1><TMPL_VAR NAME=test2><TMPL_VAR NAME=test3>');
     x.param({test1:1,test2:2,test3:3});
     equal(x.output(),'123');
-    x = HTMLTemplate.get(':<TMPL_VAR NAME=test1>:<TMPL_VAR NAME=test2>:<TMPL_VAR NAME=test3>:');
+    x = ns.HTMLTemplate.get(':<TMPL_VAR NAME=test1>:<TMPL_VAR NAME=test2>:<TMPL_VAR NAME=test3>:');
     x.param({test1:1,test2:2,test3:3});
     equal(x.output(),':1:2:3:');
-    x = HTMLTemplate.get('\n:<TMPL_VAR NAME=test1>:<TMPL_VAR NAME=test2>:<TMPL_VAR NAME=test3>:\n');
+    x = ns.HTMLTemplate.get('\n:<TMPL_VAR NAME=test1>:<TMPL_VAR NAME=test2>:<TMPL_VAR NAME=test3>:\n');
     x.param({test1:1,test2:2,test3:3});
     equal(x.output(),'\n:1:2:3:\n');
-    
-    x = HTMLTemplate.get('<TMPL_VAR NAME=test>:');
+
+    x = ns.HTMLTemplate.get('<TMPL_VAR NAME=test>:');
     x.param({});
     equal(x.output(),':');
 });
 
 test('if',function(){
-    var x = HTMLTemplate.get('<TMPL_IF NAME=test>hogehoge</TMPL_IF>');
+    var x = ns.HTMLTemplate.get('<TMPL_IF NAME=test>hogehoge</TMPL_IF>');
     x.param({test:1});
     equal(x.output(),'hogehoge');
     x.param({test:0});
@@ -55,12 +55,13 @@ test('if',function(){
 
 
 test('else',function(){
-    var x = HTMLTemplate.get('<TMPL_IF NAME=test>いいいい<TMPL_ELSE>ああああ</TMPL_IF>');
+    var x = ns.HTMLTemplate.get('<TMPL_IF NAME=test>いいいい<TMPL_ELSE>ああああ</TMPL_IF>');
     x.param({test:1});
     equal(x.output(),'いいいい');
     x.param({test:0});
     equal(x.output(),'ああああ');
-    var x = HTMLTemplate.get('<TMPL_IF NAME=test>いいいい<TMPL_ELSE><TMPL_IF NAME=test2>ぬぬぬ<TMPL_ELSE>おおお</TMPL_IF></TMPL_IF>');
+
+    x = ns.HTMLTemplate.get('<TMPL_IF NAME=test>いいいい<TMPL_ELSE><TMPL_IF NAME=test2>ぬぬぬ<TMPL_ELSE>おおお</TMPL_IF></TMPL_IF>');
     x.param({test:0,test2:true});
     equal(x.output(),'ぬぬぬ');
     x.param({test:0,test2:false});
@@ -68,13 +69,13 @@ test('else',function(){
 });
 
 test('unless',function(){
-    var x = HTMLTemplate.get('<TMPL_UNLESS NAME=test>いいいい<TMPL_ELSE>ああああ</TMPL_UNLESS>');
+    var x = ns.HTMLTemplate.get('<TMPL_UNLESS NAME=test>いいいい<TMPL_ELSE>ああああ</TMPL_UNLESS>');
     x.param({test:1});
     equal(x.output(),'ああああ');
     x.param({test:0});
     equal(x.output(),'いいいい');
-    
-    var x = HTMLTemplate.get('<TMPL_UNLESS NAME=test>いいい<TMPL_ELSE><TMPL_UNLESS NAME=test2>ぬぬぬ<TMPL_ELSE>おおお</TMPL_UNLESS></TMPL_UNLESS>');
+
+    x = ns.HTMLTemplate.get('<TMPL_UNLESS NAME=test>いいい<TMPL_ELSE><TMPL_UNLESS NAME=test2>ぬぬぬ<TMPL_ELSE>おおお</TMPL_UNLESS></TMPL_UNLESS>');
     x.param({test:0,test2:true});
     equal(x.output(),'いいい');
     x.param({test:1,test2:false});
@@ -82,14 +83,14 @@ test('unless',function(){
 });
 
 test('loop',function(){
-    var x = HTMLTemplate.get('<TMPL_LOOP NAME=test>あ</TMPL_LOOP>');
+    var x = ns.HTMLTemplate.get('<TMPL_LOOP NAME=test>あ</TMPL_LOOP>');
     x.param({test:[1,2,3,4,5]});
     equal(x.output(),'あああああ');
-    var y = HTMLTemplate.get('<TMPL_LOOP NAME=test>あ</TMPL_LOOP>');
+    var y = ns.HTMLTemplate.get('<TMPL_LOOP NAME=test>あ</TMPL_LOOP>');
     y.param({test1:[1,2,3,4,5]});
     equal(y.output(),'');
     
-    var z = HTMLTemplate.get('<TMPL_LOOP NAME=level1><TMPL_VAR NAME=var1><TMPL_LOOP NAME=level2><TMPL_VAR NAME=var2></TMPL_LOOP></TMPL_LOOP>');
+    var z = ns.HTMLTemplate.get('<TMPL_LOOP NAME=level1><TMPL_VAR NAME=var1><TMPL_LOOP NAME=level2><TMPL_VAR NAME=var2></TMPL_LOOP></TMPL_LOOP>');
     z.param({
         level1:[
             {var1:'hello',level2:[{var2:'world'}]},
@@ -100,24 +101,26 @@ test('loop',function(){
 });
 
 test('default',function(){
-    var tmpl=HTMLTemplate.get('<TMPL_VAR NAME="aaa" DEFAULT="a">');
+    var tmpl=ns.HTMLTemplate.get('<TMPL_VAR NAME="aaa" DEFAULT="a">');
     equal('a',tmpl.output());
-    var tmplB=HTMLTemplate.get('<TMPL_VAR  DEFAULT="a" NAME="aaa">');
+    var tmplB=ns.HTMLTemplate.get('<TMPL_VAR  DEFAULT="a" NAME="aaa">');
     equal('a',tmplB.output());
 });
 
 test('escape',function(){
-    var tmpl=HTMLTemplate.get('<TMPL_VAR NAME="aaa" ESCAPE=HTML>');
+    var tmpl=ns.HTMLTemplate.get('<TMPL_VAR NAME="aaa" ESCAPE=HTML>');
     tmpl.param({
         aaa:"<div>hoge</div>"
     });
     equal('&lt;div&gt;hoge&lt;/div&gt;',tmpl.output());
-    var tmpl=HTMLTemplate.get('<TMPL_VAR NAME="aaa" ESCAPE=JS>');
+
+    tmpl=ns.HTMLTemplate.get('<TMPL_VAR NAME="aaa" ESCAPE=JS>');
     tmpl.param({
         aaa:"aaa\n\n"
     });
     equal('"aaa\\n\\n"',tmpl.output());
-    var tmpl=HTMLTemplate.get('<TMPL_VAR NAME="aaa" ESCAPE=URL>');
+
+    tmpl=ns.HTMLTemplate.get('<TMPL_VAR NAME="aaa" ESCAPE=URL>');
     tmpl.param({
         aaa:"http://www.js/ ほげ"
     });
@@ -125,39 +128,40 @@ test('escape',function(){
 });
 
 test('expr',function(){
-    var x = HTMLTemplate.get('<TMPL_VAR EXPR="func(test)">');
+    var x = ns.HTMLTemplate.get('<TMPL_VAR EXPR="func(test)">');
     x.param({
         test:'hogehoge'
     });
-    x.registerFunction('func',function(t){return t+'::::'});
+    x.registerFunction('func',function(t){return t+'::::';});
     equal(x.output(),'hogehoge::::');
-    
-    HTMLTemplate.registerFunction('moremore',function(){
+
+    ns.HTMLTemplate.registerFunction('moremore',function(){
         return 'HELP!';
     });
-    var x = HTMLTemplate.get('<TMPL_VAR EXPR="moremore()">');
+
+    x = ns.HTMLTemplate.get('<TMPL_VAR EXPR="moremore()">');
 
     equal(x.output(),'HELP!');
-    
-    var x = HTMLTemplate.get('<TMPL_LOOP EXPR="func(test)">i</TMPL_LOOP>');
-    x.registerFunction('func',function(t){return [t,t,t,t,t,t,t,t,t,t]});
+
+    x = ns.HTMLTemplate.get('<TMPL_LOOP EXPR="func(test)">i</TMPL_LOOP>');
+    x.registerFunction('func',function(t){return [t,t,t,t,t,t,t,t,t,t];});
     x.param({
         test:10
     });
     equal(x.output(),'iiiiiiiiii');
-    
-    var y = HTMLTemplate.get('<TMPL_IF EXPR="func(test)">i<TMPL_ELSIF EXPR="test">love</TMPL_IF>');
+
+    var y = ns.HTMLTemplate.get('<TMPL_IF EXPR="func(test)">i<TMPL_ELSIF EXPR="test">love</TMPL_IF>');
     y.registerFunction('func',function(t){return !t;});
     y.param({
         test:false
     });
     equal(y.output(),'i');
-        
+
     y.param({
         test:true
     });
     equal(y.output(),'love');
-    var z = HTMLTemplate.get('<TMPL_UNLESS EXPR="func(test)">love</TMPL_UNLESS>');
+    var z = ns.HTMLTemplate.get('<TMPL_UNLESS EXPR="func(test)">love</TMPL_UNLESS>');
     z.param({
         test:true
     });
@@ -166,7 +170,7 @@ test('expr',function(){
 });
 
 test('ex-expr',function(){
-     var test04 = HTMLTemplate.get('<TMPL_LOOP NAME=aaa><TMPL_LOOP NAME=bbb><TMPL_LOOP NAME=ccc><TMPL_VAR EXPR="a"></TMPL_LOOP></TMPL_LOOP></TMPL_LOOP>');
+     var test04 = ns.HTMLTemplate.get('<TMPL_LOOP NAME=aaa><TMPL_LOOP NAME=bbb><TMPL_LOOP NAME=ccc><TMPL_VAR EXPR="a"></TMPL_LOOP></TMPL_LOOP></TMPL_LOOP>');
     test04.param({
         aaa :[
             {bbb:[
@@ -177,7 +181,7 @@ test('ex-expr',function(){
         ]
     });
     equal('hoge',test04.output());
-    var test05 = HTMLTemplate.get('<TMPL_LOOP NAME=aaa><TMPL_LOOP NAME=bbb><TMPL_LOOP NAME=ccc><TMPL_VAR EXPR="{/a}"></TMPL_LOOP></TMPL_LOOP></TMPL_LOOP>');
+    var test05 = ns.HTMLTemplate.get('<TMPL_LOOP NAME=aaa><TMPL_LOOP NAME=bbb><TMPL_LOOP NAME=ccc><TMPL_VAR EXPR="{/a}"></TMPL_LOOP></TMPL_LOOP></TMPL_LOOP>');
     test05.param({
         aaa :[
             {bbb:[
@@ -189,7 +193,7 @@ test('ex-expr',function(){
         a :'huga'
     });
     equal('huga',test05.output());
-    var test06 = HTMLTemplate.get('<TMPL_LOOP NAME=aaa><TMPL_LOOP NAME=bbb><TMPL_LOOP NAME=ccc><TMPL_VAR EXPR="{../a}"></TMPL_LOOP></TMPL_LOOP></TMPL_LOOP>');
+    var test06 = ns.HTMLTemplate.get('<TMPL_LOOP NAME=aaa><TMPL_LOOP NAME=bbb><TMPL_LOOP NAME=ccc><TMPL_VAR EXPR="{../a}"></TMPL_LOOP></TMPL_LOOP></TMPL_LOOP>');
     test06.param({
         aaa :[
             {bbb:[
@@ -201,7 +205,7 @@ test('ex-expr',function(){
         a :'huga'
     });
     equal('piyo',test06.output());
-    var test07 = HTMLTemplate.get('<TMPL_LOOP NAME=aaa><TMPL_LOOP NAME=bbb><TMPL_LOOP NAME=ccc><TMPL_VAR EXPR="{../../a}"></TMPL_LOOP></TMPL_LOOP></TMPL_LOOP>');
+    var test07 = ns.HTMLTemplate.get('<TMPL_LOOP NAME=aaa><TMPL_LOOP NAME=bbb><TMPL_LOOP NAME=ccc><TMPL_VAR EXPR="{../../a}"></TMPL_LOOP></TMPL_LOOP></TMPL_LOOP>');
     test07.param({
         aaa :[
             {bbb:[
@@ -213,22 +217,21 @@ test('ex-expr',function(){
         a :'huga'
     });
     equal('moga',test07.output());
-   
 });
 
 test('include',function(){
-    var tmpl = HTMLTemplate.getByElementId('test02_tmpl');
+    var tmpl = ns.HTMLTemplate.getByElementId('test02_tmpl');
     tmpl.param({
     outer:[
         {loop:[
             {test:1},
             {test:2},
-            {test:3},
+            {test:3}
         ]},
         {loop:[
             {test:1},
             {test:2},
-            {test:3},
+            {test:3}
         ]}
     ]
     });
@@ -236,4 +239,4 @@ test('include',function(){
 });
 
 
-}});
+});
