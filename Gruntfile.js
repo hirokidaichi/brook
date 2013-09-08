@@ -2,7 +2,7 @@
  * Usage
  *
  * $ npm install
- * $ grunt (jshint|qunit|concat|min)
+ * $ grunt (jshint|qunit|concat|uglify)
  *
 **/
 
