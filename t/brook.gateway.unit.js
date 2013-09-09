@@ -1,4 +1,4 @@
-
+/* global Namespace:false, test:false, expect:false, ok:false, equal:false, stop:false, start:false*/
 Namespace()
 .use('brook *')
 .use('brook.util *')
@@ -19,9 +19,9 @@ test('promise',function(){
     expect(3);
     var p = ns.promise(function(n,val){
         ok(true,'pass');
-        n(val)
+        n(val);
     }).bind(ns.mapper(ns.lambda("$*$")));
-    
+
     p.bind(p).subscribe(function(val){
         ok( val == 10000 ,'val');
     },10);
@@ -29,13 +29,10 @@ test('promise',function(){
 
 test('lambda',function(){
     expect(4);
-    with(ns){
-        equal( lambda('$*$')(2),4);
-        equal( lambda('$*$')(2),4);
-        equal( lambda('x,y->x*y')(2,3),6);
-        equal( lambda('x,y->z->x*y*z')(2,3)(2),12);
-    }
-
+    equal( ns.lambda('$*$')(2),4);
+    equal( ns.lambda('$*$')(2),4);
+    equal( ns.lambda('x,y->x*y')(2,3),6);
+    equal( ns.lambda('x,y->z->x*y*z')(2,3)(2),12);
 });
 
 test('promise defer',function(){
@@ -45,52 +42,52 @@ test('promise defer',function(){
         ok(true,'pass');
         n(val);
     }).bind(ns.mapper(ns.lambda("$*$"))).bind(ns.wait(100));
-    p.bind(p).subscribe(function(val){;
+    p.bind(p).subscribe(function(val){
         equal( val, 10000 ,'val');
         start();
     },10);
 });
 
-test('cond',function(){with(ns){
+test('cond',function(){
     expect(6);
-    var p = promise().bind(
-        cond(lambda('$ == 10'),promise(function(n,v){
+    var p = ns.promise().bind(
+        ns.cond(ns.lambda('$ == 10'),ns.promise(function(n,v){
             ok(true);
             equal( v,10);
-            n(v)
+            n(v);
         })),
-        cond(lambda('$ % 2 ==0'),promise(function(n,v){
-            ok( v%2 == 0);
-            n(v)
+        ns.cond(ns.lambda('$ % 2 ==0'),ns.promise(function(n,v){
+            ok( v%2 === 0);
+            n(v);
         })),
-        cond(lambda('$ == 11'),promise(function(n,v){
+        ns.cond(ns.lambda('$ == 11'),ns.promise(function(n,v){
             ok(true);
             equal(v,11);
-            n(v)
+            n(v);
         }))
     );
-    scatter().bind(p).run([10,11,12]);
-}});
+    ns.scatter().bind(p).run([10,11,12]);
+});
 
-test('match',function(){with(ns){
+test('match',function(){
     expect(9);
-    var p = promise().bind(
-        match({
-            10 : ns.promise(function(n,v){ equal(v,10);n(v)}),
+    var p = ns.promise().bind(
+        ns.match({
+            10 : ns.promise(function(n,v){ equal(v,10);n(v);}),
             11 : ns.promise(function(n,v){ equal(v,11);}),
             12 : ns.promise(function(n,v){ equal(v,12);})
         }).bind(function(n,v){
             equal(v,10);
         })
     );
-    scatter().bind(p).run([10,11,12]);
+    ns.scatter().bind(p).run([10,11,12]);
 
     var dispatchTable = {
         mode_should_be_foo : ns.promise(function(n,v){ equal(v.mode, 'foo'); n(v);}),
         mode_should_be_bar : ns.promise(function(n,v){ equal(v.mode, 'bar'); }),
-        mode_should_be_baz : ns.promise(function(n,v){ equal(v.mode, 'baz'); }),
+        mode_should_be_baz : ns.promise(function(n,v){ equal(v.mode, 'baz'); })
     };
-    var before = promise(function(n,v){
+    var before = ns.promise(function(n,v){
         var ret = {
             mode : v,
             value : 'before_value'
@@ -109,17 +106,17 @@ test('match',function(){with(ns){
             case 'baz' :
                 ret = 'mode_should_be_baz';
                 break;
-        };
+        }
         return ret;
     };
-    var after = promise(function(n,v){
+    var after = ns.promise(function(n,v){
         equal(v.mode, 'foo');
         equal(v.value, 'before_value');
     });
-    scatter().bind(
-        before.bind(match(dispatchTable, matcher), after)
+    ns.scatter().bind(
+        before.bind(ns.match(dispatchTable, matcher), after)
     ).run(['foo','bar','baz']);
-}});
+});
 
 test('named channel',function(){
     expect(13);
@@ -139,7 +136,7 @@ test('named channel',function(){
     var l = ns.scatter()
     .bind( ns.mapper( ns.lambda('$*$')))
     .bind( ns.takeBy(3) )
-    .bind( ns.sendChannel('test-channel'))
+    .bind( ns.sendChannel('test-channel'));
 
     l.run([1,2,3,4,5,6,7,8,9]);
 
@@ -176,7 +173,7 @@ test('channel',function(){
     var l = ns.scatter()
     .bind( ns.mapper( ns.lambda('$*$')))
     .bind( ns.takeBy(3) )
-    .bind( channel.send())
+    .bind( channel.send());
 
     l.run([1,2,3,4,5,6,7,8,9]);
 
@@ -184,7 +181,7 @@ test('channel',function(){
         equal(v, 'ok');
     });
 
-    var channel = ns.createChannel();
+    channel = ns.createChannel();
     channel.observe(promise);
     channel.send().run('ok');
 
@@ -231,7 +228,7 @@ test('lock',function(){
         .bind(inc,inc,inc)
         .bind(ns.wait(10))
         .bind(inc,inc,inc)
-        .bind(function(n,v){ ok(counter%6==0);n(v)})
+        .bind(function(n,v){ ok(counter%6===0);n(v);})
         .bind(ns.unlock('test'));
 
     var randWait = ns.scatter().bind( ns.wait( ns.lambda('Math.random()*400')));
@@ -239,11 +236,9 @@ test('lock',function(){
     randWait.bind(sync).bind(ns.takeBy(6),function(n,v){
         start();
         n(v);
-    }).run([1,2,3,4,5,6])
+    }).run([1,2,3,4,5,6]);
 
 });
 
 
 });
-
-
