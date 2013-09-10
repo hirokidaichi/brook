@@ -31,6 +31,10 @@ module.exports = function(grunt) {
         compat,
         'src/brook/mobile/dom/event.js'
     );
+    var nodejs = [].concat(
+        core,
+        htp
+    );
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -43,6 +47,12 @@ module.exports = function(grunt) {
         /* qunit */
         qunit: {
             all: ['t/**/*.html']
+        },
+
+        /* jasmine */
+        jasmine_node: {
+            projectRoot: './t/spec/',
+            forceExit: true
         },
 
         /* concat */
@@ -71,7 +81,26 @@ var module = { exports : {}};\n\
             mobile: {
                 src: mobile,
                 dest: 'build/brook-mobile.js'
-            }
+            },
+            nodejs: {
+                options: {
+                    banner: 'var Namespace = require("../lib/namespace");\n',
+                    footer: '\nNamespace()\n\
+.use("brook")\n\
+.use("brook.view.htmltemplate")\n\
+.use("brook.channel")\n\
+.use("brook.lambda")\n\
+.use("brook.model")\n\
+.use("brook.util")\n\
+.use("brook.widget")\n\
+.apply(function(ns){\n\
+    module.exports = ns.brook;\n\
+});\n\
+'
+                },
+                src: nodejs,
+                dest: 'build/node-brook.js'
+            },
         },
 
         /* uglify min */
@@ -85,6 +114,7 @@ var module = { exports : {}};\n\
 
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-qunit');
+    grunt.loadNpmTasks('grunt-jasmine-node');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
 };
