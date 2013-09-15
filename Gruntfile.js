@@ -32,8 +32,7 @@ module.exports = function(grunt) {
         'src/brook/mobile/dom/event.js'
     );
     var nodejs = [].concat(
-        core,
-        htp
+        core
     );
 
     grunt.initConfig({
@@ -85,17 +84,18 @@ var module = { exports : {}};\n\
             nodejs: {
                 options: {
                     banner: 'var Namespace = require("../lib/namespace");\n',
-                    footer: '\nNamespace()\n\
-.use("brook")\n\
-.use("brook.view.htmltemplate")\n\
-.use("brook.channel")\n\
-.use("brook.lambda")\n\
-.use("brook.model")\n\
-.use("brook.util")\n\
-.use("brook.widget")\n\
-.apply(function(ns){\n\
-    module.exports = ns.brook;\n\
-});\n\
+                    footer: 'module.exports = {\n\
+    ready: function(callback) {\n\
+        callback = callback || function(){};\n\
+        Namespace()\n\
+        .use("brook")\n\
+        .use("brook.channel")\n\
+        .use("brook.lambda")\n\
+        .use("brook.model")\n\
+        .use("brook.util")\n\
+        .apply(callback);\n\
+    }\n\
+}\n\
 '
                 },
                 src: nodejs,
