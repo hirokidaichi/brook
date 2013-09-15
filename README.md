@@ -1,4 +1,3 @@
-
 # 中／大規模開発のためのJavaScript Framework "brook"
 
 brookは、複数人でWebアプリケーションを開発する為に必要なパーツを提供するJavaScriptフレームワークです。
