@@ -1248,11 +1248,32 @@ Namespace('brook.view.htmltemplate')
 */
 Namespace('brook.dom.compat')
 .define(function(ns){
+    /**
+     * Returns HTMLElement.dataset by the specified HTMLElement.
+     *
+     * NOTE: This function is preceding upgraded to fix
+     * https://github.com/hirokidaichi/brook/pull/22.
+     *
+     * NOTE: You should care an undefined attribute value to keep compatible
+     * for Android default browser.
+     *
+     * In Android default broswer:
+     *     dataset[somethingUnexistentAttr] === ''.
+     *
+     * But in other browsers:
+     *     dataset[somethingUnexistentAttr] === undefined.
+     *
+     * @name brook.dom.compat.dataset
+     * @function
+     */
     var dataset = (function(){
         var camelize = function(string){
             return string.replace(/-+(.)?/g, function(match, chr) {
               return chr ? chr.toUpperCase() : '';
             });
+        };
+        var datasetNative = function(element){
+            return element.dataset;
         };
         var datasetCompat = function(element){
             var sets = {};
@@ -1264,15 +1285,11 @@ Namespace('brook.dom.compat')
             return sets;
         };
 
-        return function(element){
-            var d = element.dataset;
-            if (d && d instanceof DOMStringMap) {
-                return d;
-            }
-            return datasetCompat(element);
-        };
+        // Graceful fallback for browsers do not support dataset yet.
+        var isNativeDatasetAvailable = 'DOMStringMap' in window;
+        return isNativeDatasetAvailable ? datasetNative : datasetCompat;
     })();
-    
+
     var ClassList = function(element){
         this._element = element;
         this._refresh();
@@ -1352,7 +1369,7 @@ Namespace('brook.dom.compat')
     var hasClassName = function(element,className){
         var classSyntax = element.className;
         if ( !(classSyntax && className) ) return false;
-        return (new RegExp("(^|\\s)" + className + "(\\s|$)").test(classSyntax)); 
+        return (new RegExp("(^|\\s)" + className + "(\\s|$)").test(classSyntax));
     };
     var getElementsByClassName = function(className){
         if( document.getElementsByClassName ) return document.getElementsByClassName( className );
